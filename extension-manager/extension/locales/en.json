@@ -1,0 +1,72 @@
+{
+  "extension.name": "Extension Manager",
+  "extension.description": "Manage installed extensions in Arduino IDE 2.x",
+  
+  "tree.title": "Installed Extensions",
+  "tree.empty": "No extensions found",
+  "tree.enabled": "Enabled",
+  "tree.disabled": "Disabled",
+  
+  "command.refresh": "Refresh Extensions",
+  "command.enable": "Enable Extension",
+  "command.disable": "Disable Extension",
+  "command.uninstall": "Uninstall Extension",
+  "command.showInfo": "Show Extension Info",
+  "command.install": "Install Extension (.vsix)",
+  
+  "status.scanning": "Scanning extensions...",
+  "status.loading": "Loading extension data...",
+  "status.enabled": "Extension enabled",
+  "status.disabled": "Extension disabled",
+  "status.uninstalled": "Extension uninstalled",
+  "status.installed": "Extension installed",
+  
+  "confirm.enable": "Enable extension '{0}'? IDE restart required.",
+  "confirm.disable": "Disable extension '{0}'? IDE restart required.",
+  "confirm.uninstall": "Really uninstall extension '{0}'?",
+  
+  "error.notFound": "Extension not found",
+  "error.alreadyEnabled": "Extension is already enabled",
+  "error.alreadyDisabled": "Extension is already disabled",
+  "error.cannotDisableSelf": "Extension Manager cannot disable itself",
+  "error.cannotUninstallSelf": "Extension Manager cannot uninstall itself",
+  "error.readFailed": "Failed to read extension data",
+  "error.moveFailed": "Failed to move extension",
+  "error.deleteFailed": "Failed to delete extension",
+  "error.invalidVsix": "Invalid .vsix file",
+  "error.installFailed": "Installation failed",
+  "error.alreadyInstalled": "Extension is already installed",
+  
+  "info.title": "Extension Information",
+  "info.name": "Name",
+  "info.version": "Version",
+  "info.publisher": "Publisher",
+  "info.description": "Description",
+  "info.status": "Status",
+  "info.location": "Location",
+  "info.size": "Size",
+  
+  "button.enable": "Enable",
+  "button.disable": "Disable",
+  "button.uninstall": "Uninstall",
+  "button.close": "Close",
+  "button.select": "Select",
+  "button.cancel": "Cancel",
+  
+  "install.selectFile": "Select .vsix file",
+  "install.processing": "Installing extension...",
+  "install.success": "Extension installed successfully. Please restart IDE.",
+  
+  "restart.required": "IDE restart required",
+  "restart.message": "Changes will take effect after restarting the Arduino IDE.",
+  
+  "about.title": "About Extension Manager",
+  "about.version": "Version",
+  "about.description": "Manage installed extensions in Arduino IDE 2.x",
+  "about.license": "License",
+  "about.author": "Author",
+  "about.uninstall": "Uninstall Extension Manager",
+  "about.uninstallWarning": "Do you really want to uninstall Extension Manager? All data in ~/.extensionmanager will be deleted.",
+  "about.uninstallSuccess": "Extension Manager has been uninstalled. Please restart the IDE.",
+  "about.uninstallButton": "Uninstall"
+}

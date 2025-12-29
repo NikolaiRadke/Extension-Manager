@@ -1,0 +1,160 @@
+{
+  "name": "extension-manager",
+  "displayName": "Extension Manager",
+  "description": "Manage installed extensions in Arduino IDE 2.x",
+  "version": "1.0.0",
+  "publisher": "MonsterMaker",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "arduino",
+    "arduinoIDE",
+    "extension",
+    "manager",
+    "plugin"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "views": {
+      "extension-manager-activitybar": [
+        {
+          "id": "extensionManager.extensionTree",
+          "name": "Extension Manager"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "extension-manager-activitybar",
+          "title": "Extension Manager",
+          "icon": "$(extensions)"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "extensionManager.refresh",
+        "title": "Refresh Extensions",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "extensionManager.enable",
+        "title": "Enable Extension",
+        "icon": "$(check)"
+      },
+      {
+        "command": "extensionManager.disable",
+        "title": "Disable Extension",
+        "icon": "$(close)"
+      },
+      {
+        "command": "extensionManager.uninstall",
+        "title": "Uninstall Extension",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "extensionManager.showInfo",
+        "title": "Show Extension Info",
+        "icon": "$(info)"
+      },
+      {
+        "command": "extensionManager.install",
+        "title": "Install Extension (.vsix)",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "extensionManager.about",
+        "title": "About Extension Manager",
+        "icon": "$(info)"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "extensionManager.refresh",
+          "when": "false"
+        },
+        {
+          "command": "extensionManager.enable",
+          "when": "false"
+        },
+        {
+          "command": "extensionManager.disable",
+          "when": "false"
+        },
+        {
+          "command": "extensionManager.uninstall",
+          "when": "false"
+        },
+        {
+          "command": "extensionManager.showInfo",
+          "when": "false"
+        },
+        {
+          "command": "extensionManager.install",
+          "when": "false"
+        },
+        {
+          "command": "extensionManager.about",
+          "when": "false"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "extensionManager.refresh",
+          "when": "view == extensionManager.extensionTree",
+          "group": "navigation"
+        },
+        {
+          "command": "extensionManager.install",
+          "when": "view == extensionManager.extensionTree",
+          "group": "navigation"
+        },
+        {
+          "command": "extensionManager.about",
+          "when": "view == extensionManager.extensionTree",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "extensionManager.showInfo",
+          "when": "view == extensionManager.extensionTree && viewItem == extension",
+          "group": "inline@1"
+        },
+        {
+          "command": "extensionManager.enable",
+          "when": "view == extensionManager.extensionTree && viewItem == extension-disabled",
+          "group": "inline@2"
+        },
+        {
+          "command": "extensionManager.disable",
+          "when": "view == extensionManager.extensionTree && viewItem == extension-enabled",
+          "group": "inline@2"
+        },
+        {
+          "command": "extensionManager.uninstall",
+          "when": "view == extensionManager.extensionTree && viewItem =~ /extension/",
+          "group": "inline@3"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "echo 'No compilation needed'",
+    "package": "vsce package"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/extension-manager"
+  }
+}
