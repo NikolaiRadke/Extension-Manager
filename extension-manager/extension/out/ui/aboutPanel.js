@@ -246,7 +246,7 @@ class AboutPanel {
 
         <div class="info-label">GitHub</div>
         <div class="info-value">
-            <a href="https://github.com/NikolaiRadke/extension-manager" 
+            <a href="https://github.com/NikolaiRadke/Extension-Manager" 
                style="color: var(--vscode-textLink-foreground); text-decoration: none;">
                 github.com/NikolaiRadke/extension-manager
             </a>
