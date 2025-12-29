@@ -1,89 +1,67 @@
 # Extension Manager
 
-Verwalte installierte Extensions in der Arduino IDE 2.x
+Manage installed extensions in Arduino IDE 2.x - enable, disable, install, and uninstall extensions directly from the IDE.
 
 ## Features
 
-- 📦 **Extension-Liste**: Zeigt alle installierten Extensions mit Status (Aktiviert/Deaktiviert)
-- ✅ **Enable/Disable**: Extensions aktivieren und deaktivieren ohne Neuinstallation
-- 🗑️ **Uninstall**: Extensions komplett deinstallieren
-- ℹ️ **Info-Panel**: Detaillierte Informationen zu jeder Extension
-- 📥 **Install**: .vsix Dateien direkt hochladen und installieren
+- 📦 **View all installed extensions** with status (enabled/disabled)
+- ✅ **Enable/Disable extensions** without manual file operations
+- 🗑️ **Uninstall extensions** completely (including .vsix files)
+- 📥 **Install extensions** from .vsix files
+- ℹ️ **Extension details** - view version, publisher, size, and location
+- 🌍 **Automatic language detection** (English/German)
+- 🎯 **Clean interface** - integrated into Activity Bar
 
 ## Installation
 
-1. Download der `.vsix` Datei
-2. In Arduino IDE 2.x: Extension Manager installieren
-3. Nach Installation erscheint das Extension Manager Icon in der Activity Bar
+### Via VSIX File
+1. Download the latest `.vsix` file from [Releases](https://github.com/NikolaiRadke/Extension-Manager/releases)
+2. Install via Extension Manager's "Install Extension (.vsix)" button
+3. Or use the provided installer script for your platform
 
-## Verwendung
+### Via Installer Scripts
+- **Linux/macOS**: `./install_extensionmanager_[linux|macos].sh`
+- **Windows**: `install_extensionmanager_windows.bat`
 
-### Extension-Liste
+## Usage
 
-Klicke auf das Extension Manager Icon in der Activity Bar um alle installierten Extensions zu sehen.
+1. Click the Extension Manager icon in the Activity Bar (left sidebar)
+2. View all installed extensions with their status
+3. Click on any extension to:
+   - Enable/Disable
+   - View detailed information
+   - Uninstall
+4. Use the toolbar buttons to:
+   - 🔄 Refresh extension list
+   - 📥 Install new extensions
+   - ℹ️ About Extension Manager
 
-### Extension aktivieren/deaktivieren
+## Requirements
 
-- **Deaktivieren**: Klicke auf das ❌ Icon neben einer aktivierten Extension
-- **Aktivieren**: Klicke auf das ✓ Icon neben einer deaktivierten Extension
-- Nach Änderungen ist ein **IDE-Neustart erforderlich**
+- Arduino IDE 2.x
+- Extensions are managed in `~/.arduinoIDE/extensions/`
 
-### Extension-Info anzeigen
+## Known Issues
 
-Klicke auf eine Extension in der Liste um detaillierte Informationen anzuzeigen:
-- Name und Version
-- Publisher
-- Beschreibung
-- Status
-- Speicherort
-- Größe
+- A menu entry "Extension Manager" appears in the IDE menu bar - **do not click it** (it toggles the extension off/on). This is a limitation of the Arduino IDE's extension system.
+- Changes require an IDE restart to take effect
 
-### Extension deinstallieren
+## Uninstall
 
-1. Klicke auf das 🗑️ Icon neben der Extension
-2. Bestätige die Deinstallation
-3. Die Extension wird komplett entfernt (.vsix und deployedPlugins)
+Use the "About" panel (ℹ️ button) and click the "Uninstall" button. This will:
+- Remove the Extension Manager
+- Delete all settings in `~/.extensionmanager/`
+- Clean up all related files
 
-### Extension installieren
+## License
 
-1. Klicke auf das ⬇️ Icon in der Toolbar
-2. Wähle eine `.vsix` Datei aus
-3. Die Extension wird installiert
-4. Starte die IDE neu
+Apache License 2.0
 
-## Technische Details
-
-### Verzeichnis-Struktur
-
-- **Extensions**: `~/.arduinoIDE/extensions/` (.vsix Dateien)
-- **Deployed**: `~/.arduinoIDE/deployedPlugins/` (Aktive Extensions)
-- **Disabled**: `~/.extensionmanager/disabled/` (Deaktivierte Extensions)
-
-### Enable/Disable Mechanismus
-
-- **Disable**: Verschiebt Extension von `deployedPlugins/` nach `.extensionmanager/disabled/`
-- **Enable**: Verschiebt Extension zurück nach `deployedPlugins/`
-- Keine Daten gehen verloren
-- IDE-Neustart erforderlich
-
-### Selbstschutz
-
-Der Extension Manager kann sich nicht selbst deaktivieren oder deinstallieren.
-
-## Plattform-Unterstützung
-
-- ✅ Windows
-- ✅ Linux
-- ✅ macOS
-
-## Lizenz
-
-Apache 2.0
-
-## Autor
+## Author
 
 Monster Maker
 
----
+## Links
 
-**Hinweis**: Diese Extension ist speziell für die Arduino IDE 2.x entwickelt und nutzt die VS Code Extension API.
+- GitHub: https://github.com/NikolaiRadke/Extension-Manager
+- Issues: https://github.com/NikolaiRadke/Extension-Manager/issues
