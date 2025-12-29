@@ -74,20 +74,6 @@ Use the **About** panel (ℹ️ button in toolbar) and click the "Uninstall" but
 - Clean up all related files
 - Restart the IDE to complete uninstallation
 
-## License
-
-Apache License 2.0
-
-## Author
-
-Monster Maker
-
-## Links
-
-- **GitHub**: https://github.com/NikolaiRadke/Extension-Manager
-- **Issues**: https://github.com/NikolaiRadke/Extension-Manager/issues
-- **Releases**: https://github.com/NikolaiRadke/Extension-Manager/releases
-
 ## Contributing
 
 Bug reports and feature requests are welcome! Please use the GitHub Issues page.
