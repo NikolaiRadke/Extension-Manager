@@ -224,12 +224,21 @@ class Controller {
         try {
             const targetPath = path.join(this.extensionsDir, fileName);
             
-            // Delete old file
+            // Delete old .vsix file
             if (fs.existsSync(targetPath)) {
                 fs.unlinkSync(targetPath);
             }
 
-            // Copy new file
+            // Delete deployed directory to force re-deployment of new version
+            // Get base name without .vsix extension
+            const baseName = fileName.replace(/\.vsix$/, '');
+            const deployedPath = path.join(this.deployedDir, baseName);
+            
+            if (fs.existsSync(deployedPath)) {
+                this.deleteDirectory(deployedPath);
+            }
+
+            // Copy new .vsix file
             fs.copyFileSync(vsixPath, targetPath);
 
             return { success: true, message: 'status.upgraded' };
