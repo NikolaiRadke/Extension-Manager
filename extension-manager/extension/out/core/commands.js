@@ -185,6 +185,33 @@ async function installExtension(controller, treeProvider, t) {
         if (result.success) {
             vscode.window.showInformationMessage(t('install.success'));
             treeProvider.refresh();
+        } else if (result.needsUpgrade) {
+            // File already exists - ask for replacement
+            const message = t('install.upgradeMessage').replace('{0}', result.fileName);
+            
+            const choice = await vscode.window.showWarningMessage(
+                message,
+                { modal: true },
+                t('install.upgradeButton')
+            );
+            
+            if (choice === t('install.upgradeButton')) {
+                // Replace file
+                vscode.window.withProgress({
+                    location: vscode.ProgressLocation.Notification,
+                    title: t('install.processing'),
+                    cancellable: false
+                }, async () => {
+                    const upgradeResult = await controller.upgradeExtension(result.fileName, vsixPath);
+                    
+                    if (upgradeResult.success) {
+                        vscode.window.showInformationMessage(t('install.success'));
+                        treeProvider.refresh();
+                    } else {
+                        vscode.window.showErrorMessage(t(upgradeResult.message));
+                    }
+                });
+            }
         } else {
             vscode.window.showErrorMessage(t(result.message));
         }

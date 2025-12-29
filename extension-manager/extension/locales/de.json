@@ -56,6 +56,11 @@
   "install.selectFile": "Wähle .vsix Datei",
   "install.processing": "Installiere Extension...",
   "install.success": "Extension erfolgreich installiert. Bitte IDE neu starten.",
+  "install.upgradeTitle": "Extension ersetzen?",
+  "install.upgradeMessage": "{0} ist bereits installiert. Möchtest du sie ersetzen?",
+  "install.upgradeButton": "Ersetzen",
+  
+  "status.upgraded": "Extension erfolgreich aktualisiert",
   
   "restart.required": "IDE-Neustart erforderlich",
   "restart.message": "Änderungen werden nach einem Neustart der Arduino IDE wirksam.",

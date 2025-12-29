@@ -23,19 +23,10 @@
   "main": "./out/extension.js",
   "contributes": {
     "views": {
-      "extension-manager-activitybar": [
+      "explorer": [
         {
           "id": "extensionManager.extensionTree",
           "name": "Extension Manager"
-        }
-      ]
-    },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "extension-manager-activitybar",
-          "title": "Extension Manager",
-          "icon": "$(extensions)"
         }
       ]
     },
@@ -155,6 +146,6 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/extension-manager"
+    "url": "https://github.com/NikolaiRadke/Extension-Manager"
   }
 }

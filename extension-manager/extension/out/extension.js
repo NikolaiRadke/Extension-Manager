@@ -8,6 +8,9 @@
 "use strict";
 
 const vscode = require('vscode');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
 
 // Core modules
 const Scanner = require('./core/scanner');
@@ -45,6 +48,21 @@ async function activate(context) {
     treeProvider = new TreeProvider(scanner, t);
     infoPanel = new InfoPanel(scanner, controller, t);
     aboutPanel = new AboutPanel(t);
+
+    // First run: Open explorer to make Extension Manager visible in sidebar
+    const markerFile = path.join(os.homedir(), '.extensionmanager', '.first-run-done');
+    const markerDir = path.dirname(markerFile);
+    
+    if (!fs.existsSync(markerFile)) {
+        // First run
+        vscode.commands.executeCommand('workbench.view.explorer');
+        
+        // Create marker file
+        if (!fs.existsSync(markerDir)) {
+            fs.mkdirSync(markerDir, { recursive: true });
+        }
+        fs.writeFileSync(markerFile, 'done');
+    }
 
     // Register tree view
     const treeView = vscode.window.createTreeView('extensionManager.extensionTree', {

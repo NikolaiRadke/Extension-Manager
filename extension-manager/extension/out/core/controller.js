@@ -177,7 +177,7 @@ class Controller {
     /**
      * Install extension from .vsix file
      * @param {string} vsixPath - Path to .vsix file
-     * @returns {Promise<{success: boolean, message: string}>}
+     * @returns {Promise<{success: boolean, message: string, needsUpgrade?: boolean, fileName?: string}>}
      */
     async installExtension(vsixPath) {
         try {
@@ -185,22 +185,54 @@ class Controller {
                 return { success: false, message: 'error.invalidVsix' };
             }
 
+            const fileName = path.basename(vsixPath);
+            
             // Ensure extensions directory exists
             if (!fs.existsSync(this.extensionsDir)) {
                 fs.mkdirSync(this.extensionsDir, { recursive: true });
             }
 
-            const fileName = path.basename(vsixPath);
             const targetPath = path.join(this.extensionsDir, fileName);
-
-            // Check if already exists
+            
+            // Check if same file already exists
             if (fs.existsSync(targetPath)) {
-                return { success: false, message: 'error.alreadyInstalled' };
+                return {
+                    success: false,
+                    message: 'error.alreadyInstalled',
+                    needsUpgrade: true,
+                    fileName: fileName
+                };
             }
 
+            // Copy file
             fs.copyFileSync(vsixPath, targetPath);
 
             return { success: true, message: 'status.installed' };
+
+        } catch (error) {
+            return { success: false, message: 'error.installFailed' };
+        }
+    }
+
+    /**
+     * Upgrade extension - replace existing .vsix file
+     * @param {string} fileName - Filename of existing .vsix
+     * @param {string} vsixPath - Path to new .vsix file
+     * @returns {Promise<{success: boolean, message: string}>}
+     */
+    async upgradeExtension(fileName, vsixPath) {
+        try {
+            const targetPath = path.join(this.extensionsDir, fileName);
+            
+            // Delete old file
+            if (fs.existsSync(targetPath)) {
+                fs.unlinkSync(targetPath);
+            }
+
+            // Copy new file
+            fs.copyFileSync(vsixPath, targetPath);
+
+            return { success: true, message: 'status.upgraded' };
 
         } catch (error) {
             return { success: false, message: 'error.installFailed' };
