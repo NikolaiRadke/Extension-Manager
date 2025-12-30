@@ -278,15 +278,6 @@ Extension Manager handles errors gracefully:
 - **Permission denied:** Reports error but continues with other items
 - **Invalid JSON:** Falls back to standard uninstall (no extended cleanup)
 
-## Migration from Hardcoded Uninstaller
-
-If your extension has a hardcoded uninstaller:
-
-1. **Create `uninstall.json`** with all paths and settings
-2. **Update your uninstaller code** to read from JSON
-3. **Test both methods** (your uninstaller + Extension Manager)
-4. **Document in README** that Extension Manager provides complete cleanup
-
 ## Support
 
 - **Extension Manager:** https://github.com/NikolaiRadke/Extension-Manager
