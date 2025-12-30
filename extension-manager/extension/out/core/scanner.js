@@ -192,6 +192,10 @@ class Scanner {
 
             const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
             
+            // Check for uninstall.json
+            const uninstallJsonPath = path.join(dirPath, 'extension', 'uninstall.json');
+            const hasUninstallConfig = fs.existsSync(uninstallJsonPath);
+            
             return {
                 id: `${packageJson.publisher}.${packageJson.name}`,
                 name: packageJson.displayName || this.formatName(packageJson.name),
@@ -200,7 +204,8 @@ class Scanner {
                 description: packageJson.description || '',
                 status: 'enabled',
                 deployedPath: dirPath,
-                size: this.getDirectorySize(dirPath)
+                size: this.getDirectorySize(dirPath),
+                hasUninstallConfig: hasUninstallConfig
             };
 
         } catch (error) {
@@ -224,6 +229,10 @@ class Scanner {
 
             const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
             
+            // Check for uninstall.json
+            const uninstallJsonPath = path.join(dirPath, 'extension', 'uninstall.json');
+            const hasUninstallConfig = fs.existsSync(uninstallJsonPath);
+            
             return {
                 id: `${packageJson.publisher}.${packageJson.name}`,
                 name: packageJson.displayName || this.formatName(packageJson.name),
@@ -232,7 +241,8 @@ class Scanner {
                 description: packageJson.description || '',
                 status: 'disabled',
                 disabledPath: dirPath,
-                size: this.getDirectorySize(dirPath)
+                size: this.getDirectorySize(dirPath),
+                hasUninstallConfig: hasUninstallConfig
             };
 
         } catch (error) {

@@ -7,6 +7,7 @@
 
 "use strict";
 
+const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -122,6 +123,86 @@ class Controller {
     }
 
     /**
+     * Load uninstall.json configuration from extension
+     * @param {string} deployedPath - Path to deployed extension
+     * @returns {Object|null} Uninstall config or null if not found
+     */
+    loadUninstallConfig(deployedPath) {
+        try {
+            const configPath = path.join(deployedPath, 'extension', 'uninstall.json');
+            if (!fs.existsSync(configPath)) {
+                return null;
+            }
+            return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Resolve path placeholders in uninstall.json
+     * @param {string} pathStr - Path with placeholders
+     * @returns {string} Resolved path
+     */
+    resolvePath(pathStr) {
+        const homeDir = os.homedir();
+        return pathStr
+            .replace(/^~/, homeDir)
+            .replace(/\{arduinoIDE\}/g, this.extensionsDir.replace('/extensions', ''))
+            .replace(/\{home\}/g, homeDir);
+    }
+
+    /**
+     * Clear global state keys from Arduino IDE's global-state.json
+     * @param {Array} stateKeys - Keys to remove
+     */
+    async clearGlobalState(stateKeys) {
+        try {
+            const arduinoIdeDir = this.extensionsDir.replace('/extensions', '');
+            const globalStateFile = path.join(arduinoIdeDir, 'plugin-storage', 'global-state.json');
+            
+            if (fs.existsSync(globalStateFile)) {
+                const data = JSON.parse(fs.readFileSync(globalStateFile, 'utf8'));
+                
+                for (const key of stateKeys) {
+                    delete data[key];
+                }
+                
+                fs.writeFileSync(globalStateFile, JSON.stringify(data), 'utf8');
+            }
+        } catch (error) {
+            // Silent fail
+        }
+    }
+
+    /**
+     * Clear VS Code settings
+     * @param {Array} settingKeys - Setting keys to remove
+     */
+    async clearVSCodeSettings(settingKeys) {
+        try {
+            // Extract prefix from first key
+            const prefix = settingKeys[0]?.split('.')[0];
+            if (!prefix) return;
+            
+            const config = vscode.workspace.getConfiguration(prefix);
+            
+            for (const fullKey of settingKeys) {
+                const key = fullKey.replace(`${prefix}.`, '');
+                
+                try {
+                    await config.update(key, undefined, vscode.ConfigurationTarget.Global);
+                    await config.update(key, undefined, vscode.ConfigurationTarget.Workspace);
+                } catch (error) {
+                    // Silent fail
+                }
+            }
+        } catch (error) {
+            // Silent fail
+        }
+    }
+
+    /**
      * Uninstall an extension completely
      * @param {string} extensionId - Extension ID to uninstall
      * @returns {Promise<{success: boolean, message: string}>}
@@ -137,41 +218,125 @@ class Controller {
                 return { success: false, message: 'error.notFound' };
             }
 
-            // Delete deployed directory if exists
-            if (extension.deployedPath && fs.existsSync(extension.deployedPath)) {
-                this.deleteDirectory(extension.deployedPath);
-            }
+            // Check for uninstall.json
+            const uninstallConfig = extension.deployedPath ? 
+                this.loadUninstallConfig(extension.deployedPath) : null;
 
-            // Delete disabled directory if exists
-            if (extension.disabledPath && fs.existsSync(extension.disabledPath)) {
-                this.deleteDirectory(extension.disabledPath);
+            if (uninstallConfig) {
+                // JSON-based uninstall
+                return await this.executeJsonBasedUninstall(extension, uninstallConfig);
+            } else {
+                // Standard uninstall
+                return await this.executeStandardUninstall(extension);
             }
-
-            // Delete .vsix file - get directory name from either deployed or disabled path
-            const dirName = extension.deployedPath ? path.basename(extension.deployedPath) :
-                           extension.disabledPath ? path.basename(extension.disabledPath) : null;
-            
-            if (dirName) {
-                const vsixFileName = dirName + '.vsix';
-                
-                // Delete from extensions directory
-                const vsixPath = path.join(this.extensionsDir, vsixFileName);
-                if (fs.existsSync(vsixPath)) {
-                    fs.unlinkSync(vsixPath);
-                }
-                
-                // Delete from disabled directory
-                const disabledVsixPath = path.join(this.disabledDir, vsixFileName);
-                if (fs.existsSync(disabledVsixPath)) {
-                    fs.unlinkSync(disabledVsixPath);
-                }
-            }
-
-            return { success: true, message: 'status.uninstalled' };
 
         } catch (error) {
             return { success: false, message: 'error.deleteFailed' };
         }
+    }
+
+    /**
+     * Execute JSON-based uninstall using uninstall.json
+     * @param {Object} extension - Extension object
+     * @param {Object} config - Uninstall configuration from JSON
+     * @returns {Promise<{success: boolean, message: string}>}
+     */
+    async executeJsonBasedUninstall(extension, config) {
+        const results = {
+            deleted: [],
+            failed: []
+        };
+
+        // Delete directories
+        if (config.directories) {
+            for (const dir of config.directories) {
+                const resolved = this.resolvePath(dir);
+                if (fs.existsSync(resolved)) {
+                    try {
+                        this.deleteDirectory(resolved);
+                        results.deleted.push(resolved);
+                    } catch (error) {
+                        results.failed.push(resolved);
+                    }
+                }
+            }
+        }
+
+        // Delete files
+        if (config.files) {
+            for (const file of config.files) {
+                const resolved = this.resolvePath(file);
+                if (fs.existsSync(resolved)) {
+                    try {
+                        if (fs.statSync(resolved).isDirectory()) {
+                            this.deleteDirectory(resolved);
+                        } else {
+                            fs.unlinkSync(resolved);
+                        }
+                        results.deleted.push(resolved);
+                    } catch (error) {
+                        results.failed.push(resolved);
+                    }
+                }
+            }
+        }
+
+        // Clear global state
+        if (config.globalState && config.globalState.length > 0) {
+            await this.clearGlobalState(config.globalState);
+        }
+
+        // Clear VS Code settings
+        if (config.settings && config.settings.length > 0) {
+            await this.clearVSCodeSettings(config.settings);
+        }
+
+        // Standard cleanup (deployed, disabled, .vsix)
+        await this.executeStandardUninstall(extension);
+
+        return { 
+            success: results.failed.length === 0, 
+            message: results.failed.length === 0 ? 'status.uninstalled' : 'error.deleteFailed'
+        };
+    }
+
+    /**
+     * Execute standard uninstall (no uninstall.json)
+     * @param {Object} extension - Extension object
+     * @returns {Promise<{success: boolean, message: string}>}
+     */
+    async executeStandardUninstall(extension) {
+        // Delete deployed directory if exists
+        if (extension.deployedPath && fs.existsSync(extension.deployedPath)) {
+            this.deleteDirectory(extension.deployedPath);
+        }
+
+        // Delete disabled directory if exists
+        if (extension.disabledPath && fs.existsSync(extension.disabledPath)) {
+            this.deleteDirectory(extension.disabledPath);
+        }
+
+        // Delete .vsix file - get directory name from either deployed or disabled path
+        const dirName = extension.deployedPath ? path.basename(extension.deployedPath) :
+                       extension.disabledPath ? path.basename(extension.disabledPath) : null;
+        
+        if (dirName) {
+            const vsixFileName = dirName + '.vsix';
+            
+            // Delete from extensions directory
+            const vsixPath = path.join(this.extensionsDir, vsixFileName);
+            if (fs.existsSync(vsixPath)) {
+                fs.unlinkSync(vsixPath);
+            }
+            
+            // Delete from disabled directory
+            const disabledVsixPath = path.join(this.disabledDir, vsixFileName);
+            if (fs.existsSync(disabledVsixPath)) {
+                fs.unlinkSync(disabledVsixPath);
+            }
+        }
+
+        return { success: true, message: 'status.uninstalled' };
     }
 
     /**

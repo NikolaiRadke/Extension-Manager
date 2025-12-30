@@ -45,6 +45,8 @@
   "info.status": "Status",
   "info.location": "Speicherort",
   "info.size": "Größe",
+  "info.uninstallConfig": "Uninstaller",
+  "info.hasUninstallConfig": "Verfügbar (vollständige Deinstallation)",
   
   "button.enable": "Aktivieren",
   "button.disable": "Deaktivieren",

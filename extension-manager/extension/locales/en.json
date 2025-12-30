@@ -45,6 +45,8 @@
   "info.status": "Status",
   "info.location": "Location",
   "info.size": "Size",
+  "info.uninstallConfig": "Uninstaller",
+  "info.hasUninstallConfig": "Available (complete uninstall)",
   
   "button.enable": "Enable",
   "button.disable": "Disable",

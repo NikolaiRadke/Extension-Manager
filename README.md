@@ -65,6 +65,19 @@ chmod +x install_arduinoplus_macos.sh
 - Changes require an IDE restart to take effect
 - On first run, Extension Manager automatically opens the Explorer view to make itself visible
 
+## Advanced: uninstall.json Support
+
+Extension Manager supports declarative uninstall configurations. Extensions can include an `uninstall.json` file to define what should be deleted during uninstallation:
+
+- Configuration directories (e.g., `~/.myextension`)
+- Settings files
+- VS Code configuration keys
+- Global state entries
+
+When an extension includes `uninstall.json`, Extension Manager shows "Uninstaller: ✓ Available" in the extension details and performs a complete cleanup on uninstall.
+
+**For extension developers:** See [UNINSTALLER.md](UNINSTALLER.md) for the full specification.
+
 ## Uninstall
 
 Use the **About** panel (ℹ️ button in toolbar) and click the "Uninstall" button in the Danger Zone. This will:

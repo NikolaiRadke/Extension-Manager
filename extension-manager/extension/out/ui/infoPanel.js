@@ -286,6 +286,11 @@ class InfoPanel {
         <span class="label">${this.t('info.size')}:</span>
         <span class="value">${extension.size}</span>
 
+        ${extension.hasUninstallConfig ? `
+        <span class="label">${this.t('info.uninstallConfig')}:</span>
+        <span class="value" style="color: var(--vscode-charts-green);">✓ ${this.t('info.hasUninstallConfig')}</span>
+        ` : ''}
+
         ${extension.vsixPath ? `
         <span class="label">${this.t('info.location')}:</span>
         <span class="value location">${extension.vsixPath}</span>
