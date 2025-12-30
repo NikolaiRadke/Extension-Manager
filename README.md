@@ -11,6 +11,9 @@ Manage installed extensions in Arduino IDE 2.x - enable, disable, install, and u
 - ℹ️ **Extension details** - view version, publisher, size, and location in a dedicated panel
 - 🌍 **Automatic language detection** (English/German) based on IDE settings
 - 🎯 **Clean interface** - integrated into Explorer sidebar, no cluttered Activity Bar
+  
+## Screenshot
+![Extension Manager](http://www.nikolairadke.de/aiduino/extensionmanager_screenshot.png)
 
 ## Installation
 
