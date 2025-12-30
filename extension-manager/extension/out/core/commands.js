@@ -185,24 +185,48 @@ async function installExtension(controller, treeProvider, t) {
         if (result.success) {
             vscode.window.showInformationMessage(t('install.success'));
             treeProvider.refresh();
-        } else if (result.needsUpgrade) {
-            // File already exists - ask for replacement
-            const message = t('install.upgradeMessage').replace('{0}', result.fileName);
+        } else if (result.needsUpgrade && result.versionInfo) {
+            // Version conflict detected
+            const info = result.versionInfo;
+            let message = '';
+            let button = '';
+            
+            if (info.action === 'upgrade') {
+                message = t('install.upgradeVersion')
+                    .replace('{0}', info.extensionName || result.fileName)
+                    .replace('{1}', info.currentVersion)
+                    .replace('{2}', info.newVersion);
+                button = t('install.upgradeButton');
+            } else if (info.action === 'downgrade') {
+                message = t('install.downgradeVersion')
+                    .replace('{0}', info.extensionName || result.fileName)
+                    .replace('{1}', info.currentVersion)
+                    .replace('{2}', info.newVersion);
+                button = t('install.downgradeButton');
+            } else {
+                // Reinstall same version
+                message = t('install.reinstallVersion')
+                    .replace('{0}', info.extensionName || result.fileName)
+                    .replace('{1}', info.currentVersion || info.newVersion);
+                button = t('install.reinstallButton');
+            }
             
             const choice = await vscode.window.showWarningMessage(
                 message,
                 { modal: true },
-                t('install.upgradeButton')
+                button
             );
             
-            if (choice === t('install.upgradeButton')) {
-                // Replace file
+            if (choice === button) {
+                // Perform upgrade/downgrade/reinstall
+                const oldFile = info.currentFile || result.fileName;
+                
                 vscode.window.withProgress({
                     location: vscode.ProgressLocation.Notification,
                     title: t('install.processing'),
                     cancellable: false
                 }, async () => {
-                    const upgradeResult = await controller.upgradeExtension(result.fileName, vsixPath);
+                    const upgradeResult = await controller.upgradeExtension(oldFile, vsixPath);
                     
                     if (upgradeResult.success) {
                         vscode.window.showInformationMessage(t('install.success'));

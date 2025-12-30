@@ -123,6 +123,75 @@ class Controller {
     }
 
     /**
+     * Parse extension name and version from .vsix filename
+     * @param {string} fileName - VSIX filename (e.g., "aiduino-2.6.0.vsix")
+     * @returns {Object|null} {name, version} or null if parsing fails
+     */
+    parseVsixFilename(fileName) {
+        // Match patterns: name-version.vsix or name.vsix
+        const match = fileName.match(/^(.+?)-(\d+\.\d+\.\d+)\.vsix$/);
+        if (match) {
+            return { name: match[1], version: match[2] };
+        }
+        
+        // Fallback: name.vsix (no version)
+        const simpleMatch = fileName.match(/^(.+?)\.vsix$/);
+        if (simpleMatch) {
+            return { name: simpleMatch[1], version: null };
+        }
+        
+        return null;
+    }
+
+    /**
+     * Compare two semantic versions
+     * @param {string} v1 - Version 1 (e.g., "2.6.0")
+     * @param {string} v2 - Version 2 (e.g., "2.7.0")
+     * @returns {number} -1 if v1 < v2, 0 if equal, 1 if v1 > v2
+     */
+    compareVersions(v1, v2) {
+        const parts1 = v1.split('.').map(Number);
+        const parts2 = v2.split('.').map(Number);
+        
+        for (let i = 0; i < 3; i++) {
+            const num1 = parts1[i] || 0;
+            const num2 = parts2[i] || 0;
+            
+            if (num1 > num2) return 1;
+            if (num1 < num2) return -1;
+        }
+        
+        return 0;
+    }
+
+    /**
+     * Find installed version of an extension by name
+     * @param {string} extensionName - Extension name from filename
+     * @returns {Object|null} {fileName, version} or null if not found
+     */
+    findInstalledVersion(extensionName) {
+        try {
+            const files = fs.readdirSync(this.extensionsDir);
+            
+            for (const file of files) {
+                if (!file.endsWith('.vsix')) continue;
+                
+                const parsed = this.parseVsixFilename(file);
+                if (parsed && parsed.name === extensionName) {
+                    return {
+                        fileName: file,
+                        version: parsed.version
+                    };
+                }
+            }
+            
+            return null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
      * Load uninstall.json configuration from extension
      * @param {string} deployedPath - Path to deployed extension
      * @returns {Object|null} Uninstall config or null if not found
@@ -342,7 +411,7 @@ class Controller {
     /**
      * Install extension from .vsix file
      * @param {string} vsixPath - Path to .vsix file
-     * @returns {Promise<{success: boolean, message: string, needsUpgrade?: boolean, fileName?: string}>}
+     * @returns {Promise<{success: boolean, message: string, needsUpgrade?: boolean, fileName?: string, versionInfo?: Object}>}
      */
     async installExtension(vsixPath) {
         try {
@@ -351,6 +420,7 @@ class Controller {
             }
 
             const fileName = path.basename(vsixPath);
+            const parsed = this.parseVsixFilename(fileName);
             
             // Ensure extensions directory exists
             if (!fs.existsSync(this.extensionsDir)) {
@@ -365,8 +435,40 @@ class Controller {
                     success: false,
                     message: 'error.alreadyInstalled',
                     needsUpgrade: true,
-                    fileName: fileName
+                    fileName: fileName,
+                    versionInfo: {
+                        action: 'reinstall',
+                        currentVersion: parsed?.version,
+                        newVersion: parsed?.version
+                    }
                 };
+            }
+
+            // Check for other versions of the same extension
+            if (parsed && parsed.name && parsed.version) {
+                const installed = this.findInstalledVersion(parsed.name);
+                
+                if (installed && installed.version) {
+                    const comparison = this.compareVersions(parsed.version, installed.version);
+                    
+                    let action = 'upgrade';
+                    if (comparison < 0) action = 'downgrade';
+                    else if (comparison === 0) action = 'reinstall';
+                    
+                    return {
+                        success: false,
+                        message: 'error.versionConflict',
+                        needsUpgrade: true,
+                        fileName: fileName,
+                        versionInfo: {
+                            action: action,
+                            currentVersion: installed.version,
+                            currentFile: installed.fileName,
+                            newVersion: parsed.version,
+                            extensionName: parsed.name
+                        }
+                    };
+                }
             }
 
             // Copy file
@@ -381,30 +483,42 @@ class Controller {
 
     /**
      * Upgrade extension - replace existing .vsix file
-     * @param {string} fileName - Filename of existing .vsix
+     * @param {string} oldFileName - Filename of existing .vsix (can be different version)
      * @param {string} vsixPath - Path to new .vsix file
      * @returns {Promise<{success: boolean, message: string}>}
      */
-    async upgradeExtension(fileName, vsixPath) {
+    async upgradeExtension(oldFileName, vsixPath) {
         try {
-            const targetPath = path.join(this.extensionsDir, fileName);
+            const newFileName = path.basename(vsixPath);
+            const newPath = path.join(this.extensionsDir, newFileName);
             
-            // Delete old .vsix file
-            if (fs.existsSync(targetPath)) {
-                fs.unlinkSync(targetPath);
-            }
-
-            // Delete deployed directory to force re-deployment of new version
-            // Get base name without .vsix extension
-            const baseName = fileName.replace(/\.vsix$/, '');
-            const deployedPath = path.join(this.deployedDir, baseName);
+            // Parse new filename to get extension name
+            const parsed = this.parseVsixFilename(newFileName);
             
-            if (fs.existsSync(deployedPath)) {
-                this.deleteDirectory(deployedPath);
+            if (parsed && parsed.name) {
+                // Delete ALL old versions of this extension (not just the one passed in)
+                const files = fs.readdirSync(this.extensionsDir);
+                for (const file of files) {
+                    if (!file.endsWith('.vsix')) continue;
+                    
+                    const oldParsed = this.parseVsixFilename(file);
+                    if (oldParsed && oldParsed.name === parsed.name && file !== newFileName) {
+                        const oldPath = path.join(this.extensionsDir, file);
+                        if (fs.existsSync(oldPath)) {
+                            fs.unlinkSync(oldPath);
+                        }
+                    }
+                }
+                
+                // Delete deployed directory to force re-deployment of new version
+                const deployedPath = path.join(this.deployedDir, parsed.name);
+                if (fs.existsSync(deployedPath)) {
+                    this.deleteDirectory(deployedPath);
+                }
             }
 
             // Copy new .vsix file
-            fs.copyFileSync(vsixPath, targetPath);
+            fs.copyFileSync(vsixPath, newPath);
 
             return { success: true, message: 'status.upgraded' };
 

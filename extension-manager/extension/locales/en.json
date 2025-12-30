@@ -36,6 +36,7 @@
   "error.invalidVsix": "Invalid .vsix file",
   "error.installFailed": "Installation failed",
   "error.alreadyInstalled": "Extension is already installed",
+  "error.versionConflict": "A different version is already installed",
   
   "info.title": "Extension Information",
   "info.name": "Name",
@@ -60,7 +61,12 @@
   "install.success": "Extension installed successfully. Please restart IDE.",
   "install.upgradeTitle": "Replace extension?",
   "install.upgradeMessage": "{0} is already installed. Do you want to replace it?",
-  "install.upgradeButton": "Replace",
+  "install.upgradeVersion": "{0} version {1} is installed. Upgrade to version {2}?",
+  "install.downgradeVersion": "{0} version {1} is installed. Downgrade to version {2}? (Older version!)",
+  "install.reinstallVersion": "{0} version {1} is already installed. Reinstall?",
+  "install.upgradeButton": "Upgrade",
+  "install.downgradeButton": "Downgrade",
+  "install.reinstallButton": "Reinstall",
   
   "status.upgraded": "Extension upgraded successfully",
   
