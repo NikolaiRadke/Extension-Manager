@@ -152,12 +152,12 @@ The following placeholders are automatically resolved:
 
 ## Complete Example
 
-Here's a complete `uninstall.json` for a hypothetical extension:
+Here's a complete `uninstall.json` for a complete hypothetical extension:
 
 ```json
 {
   "name": "AI.duino",
-  "version": "2.6.0",
+  "version": "2.5.0",
   "directories": [
     "~/.aiduino"
   ],
