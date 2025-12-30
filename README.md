@@ -1,3 +1,4 @@
+![Extension Manager](http://www.nikolairadke.de/aiduino/extensionmanager_banner.png)
 # Extension Manager
 
 Manage installed extensions in Arduino IDE 2.x - enable, disable, install, and uninstall extensions directly from the IDE.
