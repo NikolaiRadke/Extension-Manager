@@ -18,7 +18,7 @@ Manage installed extensions in Arduino IDE 2.x - enable, disable, install, and u
 
 ## Installation
 
-You need the VSIX file *arduinoplus.vsix* in the same folder with the installer. The installer will install the plugin in your home folder. 
+You need the VSIX file **extension-manager-X.X.X.vsix** in the same folder with the installer. The installer will install the plugin in your home folder. 
   
 #### Windows
 Run ``` install_arduinoplus_windows.bat ``` as administrator
