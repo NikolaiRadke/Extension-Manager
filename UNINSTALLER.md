@@ -292,9 +292,3 @@ If your extension has a hardcoded uninstaller:
 - **Extension Manager:** https://github.com/NikolaiRadke/Extension-Manager
 - **Issues:** https://github.com/NikolaiRadke/Extension-Manager/issues
 - **Examples:** See [AI.duino's uninstall.json](https://github.com/NikolaiRadke/AI.duino/blob/main/uninstall.json)
-
----
-
-**Last Updated:** 2025-12-30  
-**Extension Manager Version:** 1.0.0+  
-**Arduino IDE Version:** 2.3.x - 2.6.7+
