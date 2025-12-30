@@ -17,15 +17,22 @@ Manage installed extensions in Arduino IDE 2.x - enable, disable, install, and u
 
 ## Installation
 
-### Via VSIX File
-1. Download the latest `.vsix` file from [Releases](https://github.com/NikolaiRadke/Extension-Manager/releases)
-2. In Arduino IDE, open the Extensions view (Files icon in sidebar)
-3. Click the download icon and select the .vsix file
-4. Restart the IDE
+You need the VSIX file *arduinoplus.vsix* in the same folder with the installer. The installer will install the plugin in your home folder. 
+  
+#### Windows
+Run ``` install_arduinoplus_windows.bat ``` as administrator
 
-### Via Installer Scripts
-- **Linux/macOS**: `./install_extensionmanager_[linux|macos].sh`
-- **Windows**: `install_extensionmanager_windows.bat`
+#### Linux
+```
+chmod +x install_arduinoplus_linux.sh
+./install_arduinoplus_install_linux.sh
+```
+
+#### macOS
+```
+chmod +x install_arduinoplus_macos.sh
+./install_arduinoplus_Install_macos.sh
+```
 
 ## Usage
 
@@ -52,22 +59,10 @@ Manage installed extensions in Arduino IDE 2.x - enable, disable, install, and u
 - The .vsix file is also moved to prevent automatic re-deployment
 - Requires IDE restart to take effect
 
-## Requirements
-
-- Arduino IDE 2.x (tested with 2.3.x and later)
-- Extensions are managed in `~/.arduinoIDE/`
-
 ## Known Limitations
 
 - Changes require an IDE restart to take effect
 - On first run, Extension Manager automatically opens the Explorer view to make itself visible
-
-## File Locations
-
-- **Installed extensions**: `~/.arduinoIDE/extensions/` (.vsix files)
-- **Active extensions**: `~/.arduinoIDE/deployedPlugins/` (deployed)
-- **Disabled extensions**: `~/.extensionmanager/disabled/` (inactive)
-- **Settings marker**: `~/.extensionmanager/.first-run-done`
 
 ## Uninstall
 
@@ -76,6 +71,10 @@ Use the **About** panel (ℹ️ button in toolbar) and click the "Uninstall" but
 - Delete all settings and data in `~/.extensionmanager/`
 - Clean up all related files
 - Restart the IDE to complete uninstallation
+
+## Related Projects
+  
+- **[Arduino+](https://github.com/NikolaiRadke/Arduinoplus)** - Essential IDE helpers for Arduino development.
 
 ## Contributing
 
