@@ -1,0 +1,19 @@
+{
+  "name": "Extension Manager",
+  "version": "1.0.0",
+  "directories": [
+    "~/.extensionmanager"
+  ],
+  "files": [
+    "{arduinoIDE}/extensions/extension-manager.vsix",
+    "{arduinoIDE}/extensions/extension-manager-*.vsix",
+    "{arduinoIDE}/deployedPlugins/extension-manager",
+    "{arduinoIDE}/deployedPlugins/extension-manager-*"
+  ],
+  "globalState": [],
+  "settings": [],
+  "confirm": {
+    "enabled": true,
+    "double": false
+  }
+}

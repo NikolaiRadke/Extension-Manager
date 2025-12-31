@@ -114,6 +114,10 @@ class TreeProvider {
         tooltip.appendMarkdown(`${this.t('info.version')}: ${extension.version}\n\n`);
         tooltip.appendMarkdown(`${this.t('info.status')}: ${extension.status === 'enabled' ? this.t('tree.enabled') : this.t('tree.disabled')}\n\n`);
         
+        if (extension.installedDate) {
+            tooltip.appendMarkdown(`${this.t('info.installed')}: ${extension.installedDate}\n\n`);
+        }
+        
         if (extension.description) {
             tooltip.appendMarkdown(`${this.t('info.description')}: ${extension.description}\n\n`);
         }

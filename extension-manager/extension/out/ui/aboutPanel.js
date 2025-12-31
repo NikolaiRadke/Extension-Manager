@@ -74,31 +74,15 @@ class AboutPanel {
      */
     async uninstallSelf() {
         try {
-            const homeDir = os.homedir();
-            const extensionsDir = path.join(homeDir, '.arduinoIDE', 'extensions');
-            const deployedDir = path.join(homeDir, '.arduinoIDE', 'deployedPlugins');
-            const managerDir = path.join(homeDir, '.extensionmanager');
-
-            // Delete .extensionmanager directory
-            if (fs.existsSync(managerDir)) {
-                this.deleteDirectory(managerDir);
-            }
-
-            // Delete deployed directory
-            const deployedPath = path.join(deployedDir, 'extension-manager');
-            if (fs.existsSync(deployedPath)) {
-                this.deleteDirectory(deployedPath);
-            }
-
-            // Delete .vsix file(s)
-            if (fs.existsSync(extensionsDir)) {
-                const vsixFiles = fs.readdirSync(extensionsDir)
-                    .filter(f => f.includes('extension-manager') && f.endsWith('.vsix'));
-                
-                for (const vsixFile of vsixFiles) {
-                    const vsixPath = path.join(extensionsDir, vsixFile);
-                    fs.unlinkSync(vsixPath);
-                }
+            // Load uninstall.json
+            const uninstallConfig = this.loadUninstallConfig();
+            
+            if (uninstallConfig) {
+                // Use declarative uninstall
+                await this.executeJsonBasedUninstall(uninstallConfig);
+            } else {
+                // Fallback to hardcoded uninstall
+                await this.executeLegacyUninstall();
             }
 
             vscode.window.showInformationMessage(this.t('about.uninstallSuccess'));
@@ -109,6 +93,116 @@ class AboutPanel {
 
         } catch (error) {
             vscode.window.showErrorMessage('Uninstall failed: ' + error.message);
+        }
+    }
+
+    /**
+     * Load uninstall.json configuration
+     */
+    loadUninstallConfig() {
+        try {
+            const configPath = path.join(__dirname, '..', '..', 'uninstall.json');
+            if (!fs.existsSync(configPath)) {
+                return null;
+            }
+            return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Resolve path placeholders
+     */
+    resolvePath(pathStr) {
+        const homeDir = os.homedir();
+        const arduinoIdeDir = path.join(homeDir, '.arduinoIDE');
+        
+        return pathStr
+            .replace(/^~/, homeDir)
+            .replace(/\{arduinoIDE\}/g, arduinoIdeDir)
+            .replace(/\{home\}/g, homeDir);
+    }
+
+    /**
+     * Execute JSON-based uninstall
+     */
+    async executeJsonBasedUninstall(config) {
+        // Delete directories
+        if (config.directories) {
+            for (const dir of config.directories) {
+                const resolved = this.resolvePath(dir);
+                if (fs.existsSync(resolved)) {
+                    this.deleteDirectory(resolved);
+                }
+            }
+        }
+
+        // Delete files (including wildcards)
+        if (config.files) {
+            for (const file of config.files) {
+                const resolved = this.resolvePath(file);
+                
+                // Handle wildcards
+                if (resolved.includes('*')) {
+                    const dir = path.dirname(resolved);
+                    const pattern = path.basename(resolved);
+                    
+                    if (fs.existsSync(dir)) {
+                        const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+                        const files = fs.readdirSync(dir).filter(f => regex.test(f));
+                        
+                        for (const f of files) {
+                            const fullPath = path.join(dir, f);
+                            if (fs.statSync(fullPath).isDirectory()) {
+                                this.deleteDirectory(fullPath);
+                            } else {
+                                fs.unlinkSync(fullPath);
+                            }
+                        }
+                    }
+                } else {
+                    if (fs.existsSync(resolved)) {
+                        if (fs.statSync(resolved).isDirectory()) {
+                            this.deleteDirectory(resolved);
+                        } else {
+                            fs.unlinkSync(resolved);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Legacy hardcoded uninstall (fallback)
+     */
+    async executeLegacyUninstall() {
+        const homeDir = os.homedir();
+        const extensionsDir = path.join(homeDir, '.arduinoIDE', 'extensions');
+        const deployedDir = path.join(homeDir, '.arduinoIDE', 'deployedPlugins');
+        const managerDir = path.join(homeDir, '.extensionmanager');
+
+        // Delete .extensionmanager directory
+        if (fs.existsSync(managerDir)) {
+            this.deleteDirectory(managerDir);
+        }
+
+        // Delete deployed directory
+        const deployedPath = path.join(deployedDir, 'extension-manager');
+        if (fs.existsSync(deployedPath)) {
+            this.deleteDirectory(deployedPath);
+        }
+
+        // Delete .vsix file(s)
+        if (fs.existsSync(extensionsDir)) {
+            const vsixFiles = fs.readdirSync(extensionsDir)
+                .filter(f => f.includes('extension-manager') && f.endsWith('.vsix'));
+            
+            for (const vsixFile of vsixFiles) {
+                const vsixPath = path.join(extensionsDir, vsixFile);
+                fs.unlinkSync(vsixPath);
+            }
         }
     }
 
@@ -246,7 +340,7 @@ class AboutPanel {
 
         <div class="info-label">GitHub</div>
         <div class="info-value">
-            <a href="https://github.com/NikolaiRadke/Extension-Manager" 
+            <a href="https://github.com/NikolaiRadke/extension-manager" 
                style="color: var(--vscode-textLink-foreground); text-decoration: none;">
                 github.com/NikolaiRadke/extension-manager
             </a>

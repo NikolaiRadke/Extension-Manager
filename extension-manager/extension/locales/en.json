@@ -46,6 +46,7 @@
   "info.status": "Status",
   "info.location": "Location",
   "info.size": "Size",
+  "info.installed": "Installed",
   "info.uninstallConfig": "Uninstaller",
   "info.hasUninstallConfig": "Available (complete uninstall)",
   

@@ -286,6 +286,11 @@ class InfoPanel {
         <span class="label">${this.t('info.size')}:</span>
         <span class="value">${extension.size}</span>
 
+        ${extension.installedDate ? `
+        <span class="label">${this.t('info.installed')}:</span>
+        <span class="value">${extension.installedDate}</span>
+        ` : ''}
+
         ${extension.hasUninstallConfig ? `
         <span class="label">${this.t('info.uninstallConfig')}:</span>
         <span class="value" style="color: var(--vscode-charts-green);">✓ ${this.t('info.hasUninstallConfig')}</span>

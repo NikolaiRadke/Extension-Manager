@@ -139,6 +139,21 @@ class Scanner {
     }
 
     /**
+     * Format date as ISO 8601 string (YYYY-MM-DD HH:MM)
+     * @param {Date} date - Date object
+     * @returns {string} Formatted date string
+     */
+    formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+    }
+
+    /**
      * Parse extension data from .vsix file
      * @param {string} vsixFile - Filename of .vsix
      * @param {string} directory - Directory where the .vsix is located
@@ -158,6 +173,10 @@ class Scanner {
 
             const [, publisher, name, version] = match;
             const id = `${publisher}.${name}`;
+            
+            // Get installation date from file modified time
+            const stats = fs.statSync(vsixPath);
+            const installedDate = this.formatDate(stats.mtime);
 
             return {
                 id,
@@ -168,7 +187,8 @@ class Scanner {
                 vsixPath,
                 vsixFile,
                 description: '',
-                size: this.getFileSize(vsixPath)
+                size: this.getFileSize(vsixPath),
+                installedDate: installedDate
             };
 
         } catch (error) {
@@ -196,6 +216,10 @@ class Scanner {
             const uninstallJsonPath = path.join(dirPath, 'extension', 'uninstall.json');
             const hasUninstallConfig = fs.existsSync(uninstallJsonPath);
             
+            // Get installation date from directory creation time
+            const stats = fs.statSync(dirPath);
+            const installedDate = this.formatDate(stats.mtime);
+            
             return {
                 id: `${packageJson.publisher}.${packageJson.name}`,
                 name: packageJson.displayName || this.formatName(packageJson.name),
@@ -205,7 +229,8 @@ class Scanner {
                 status: 'enabled',
                 deployedPath: dirPath,
                 size: this.getDirectorySize(dirPath),
-                hasUninstallConfig: hasUninstallConfig
+                hasUninstallConfig: hasUninstallConfig,
+                installedDate: installedDate
             };
 
         } catch (error) {
@@ -233,6 +258,10 @@ class Scanner {
             const uninstallJsonPath = path.join(dirPath, 'extension', 'uninstall.json');
             const hasUninstallConfig = fs.existsSync(uninstallJsonPath);
             
+            // Get installation date from directory creation time
+            const stats = fs.statSync(dirPath);
+            const installedDate = this.formatDate(stats.mtime);
+            
             return {
                 id: `${packageJson.publisher}.${packageJson.name}`,
                 name: packageJson.displayName || this.formatName(packageJson.name),
@@ -242,7 +271,8 @@ class Scanner {
                 status: 'disabled',
                 disabledPath: dirPath,
                 size: this.getDirectorySize(dirPath),
-                hasUninstallConfig: hasUninstallConfig
+                hasUninstallConfig: hasUninstallConfig,
+                installedDate: installedDate
             };
 
         } catch (error) {
