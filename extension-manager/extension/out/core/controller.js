@@ -172,20 +172,32 @@ class Controller {
     findInstalledVersion(extensionName) {
         try {
             const files = fs.readdirSync(this.extensionsDir);
+            let foundWithoutVersion = null;
             
             for (const file of files) {
                 if (!file.endsWith('.vsix')) continue;
                 
                 const parsed = this.parseVsixFilename(file);
+                
                 if (parsed && parsed.name === extensionName) {
-                    return {
-                        fileName: file,
-                        version: parsed.version
-                    };
+                    // Prefer files with version numbers
+                    if (parsed.version) {
+                        return {
+                            fileName: file,
+                            version: parsed.version
+                        };
+                    } else {
+                        // Keep track of files without version
+                        foundWithoutVersion = {
+                            fileName: file,
+                            version: null
+                        };
+                    }
                 }
             }
             
-            return null;
+            // Return file without version if that's all we found
+            return foundWithoutVersion;
         } catch (error) {
             return null;
         }
@@ -445,15 +457,26 @@ class Controller {
             }
 
             // Check for other versions of the same extension
-            if (parsed && parsed.name && parsed.version) {
+            if (parsed && parsed.name) {
                 const installed = this.findInstalledVersion(parsed.name);
                 
-                if (installed && installed.version) {
-                    const comparison = this.compareVersions(parsed.version, installed.version);
-                    
+                if (installed) {
                     let action = 'upgrade';
-                    if (comparison < 0) action = 'downgrade';
-                    else if (comparison === 0) action = 'reinstall';
+                    let currentVersion = installed.version || 'unknown';
+                    let newVersion = parsed.version || 'unknown';
+                    
+                    // Both have versions - compare them
+                    if (parsed.version && installed.version) {
+                        const comparison = this.compareVersions(parsed.version, installed.version);
+                        
+                        if (comparison < 0) action = 'downgrade';
+                        else if (comparison === 0) action = 'reinstall';
+                        // else: comparison > 0 → action = 'upgrade' (already set)
+                    } else {
+                        // At least one file has no version number
+                        // Treat as upgrade/replacement
+                        action = 'upgrade';
+                    }
                     
                     return {
                         success: false,
@@ -462,9 +485,9 @@ class Controller {
                         fileName: fileName,
                         versionInfo: {
                             action: action,
-                            currentVersion: installed.version,
+                            currentVersion: currentVersion,
                             currentFile: installed.fileName,
-                            newVersion: parsed.version,
+                            newVersion: newVersion,
                             extensionName: parsed.name
                         }
                     };
