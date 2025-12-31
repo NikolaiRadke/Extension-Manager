@@ -56,15 +56,36 @@ async function activate(context) {
     });
     context.subscriptions.push(treeView);
     
-    // Make TreeView visible if not already visible
-    // Use setTimeout to avoid blocking the activation call stack
+    // Open explorer only once per sketch (workspace)
+    // Use hash-based marker file in Arduino IDE's workspace-storage
     setTimeout(() => {
         if (!treeView.visible) {
-            try {
-                // Try to reveal the tree view without focusing
-                treeView.reveal(null, { select: false, focus: false });
-            } catch (error) {
-                // Fallback: open explorer view
+            const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+            
+            if (workspaceFolder) {
+                // Create hash like Arduino IDE does
+                const crypto = require('crypto');
+                const hash = crypto.createHash('md5').update(workspaceFolder).digest('hex');
+                const storageDir = path.join(os.homedir(), '.arduinoIDE', 'workspace-storage', hash);
+                const markerFile = path.join(storageDir, '.extensionmanager-triggered');
+                
+                if (!fs.existsSync(markerFile)) {
+                    // First time in this sketch - trigger explorer once
+                    if (!fs.existsSync(storageDir)) {
+                        fs.mkdirSync(storageDir, { recursive: true });
+                    }
+                    
+                    vscode.commands.executeCommand('workbench.view.explorer');
+                    
+                    try {
+                        fs.writeFileSync(markerFile, new Date().toISOString());
+                    } catch (error) {
+                        // Silent fail - not critical
+                    }
+                }
+                // If marker exists, do nothing - explorer already triggered before
+            } else {
+                // No workspace folder - trigger anyway
                 vscode.commands.executeCommand('workbench.view.explorer');
             }
         }
