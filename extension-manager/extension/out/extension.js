@@ -49,27 +49,26 @@ async function activate(context) {
     infoPanel = new InfoPanel(scanner, controller, t);
     aboutPanel = new AboutPanel(t);
 
-    // First run: Open explorer to make Extension Manager visible in sidebar
-    const markerFile = path.join(os.homedir(), '.extensionmanager', '.first-run-done');
-    const markerDir = path.dirname(markerFile);
-    
-    if (!fs.existsSync(markerFile)) {
-        // First run
-        vscode.commands.executeCommand('workbench.view.explorer');
-        
-        // Create marker file
-        if (!fs.existsSync(markerDir)) {
-            fs.mkdirSync(markerDir, { recursive: true });
-        }
-        fs.writeFileSync(markerFile, 'done');
-    }
-
     // Register tree view
     const treeView = vscode.window.createTreeView('extensionManager.extensionTree', {
         treeDataProvider: treeProvider,
         showCollapseAll: false
     });
     context.subscriptions.push(treeView);
+    
+    // Make TreeView visible if not already visible
+    // Use setTimeout to avoid blocking the activation call stack
+    setTimeout(() => {
+        if (!treeView.visible) {
+            try {
+                // Try to reveal the tree view without focusing
+                treeView.reveal(null, { select: false, focus: false });
+            } catch (error) {
+                // Fallback: open explorer view
+                vscode.commands.executeCommand('workbench.view.explorer');
+            }
+        }
+    }, 100);
 
     // Register commands
     registerCommands(context);
