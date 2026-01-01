@@ -88,12 +88,18 @@ class Scanner {
                     if (stat.isDirectory()) {
                         const ext = await this.parseDeployedExtension(dirName, deployedPath);
                         if (ext) {
-                            // Check if already in list from vsix scan
-                            const existingIndex = extensions.findIndex(e => e.id === ext.id);
+                            // Check if already in list from vsix scan - match by rawName and version
+                            const existingIndex = extensions.findIndex(e => 
+                                e.rawName === ext.rawName && e.version === ext.version
+                            );
                             if (existingIndex >= 0) {
-                                // Update status to enabled
+                                // Update existing entry with deployed info
                                 extensions[existingIndex].status = 'enabled';
                                 extensions[existingIndex].deployedPath = deployedPath;
+                                extensions[existingIndex].id = ext.id; // Use proper ID from package.json
+                                extensions[existingIndex].publisher = ext.publisher;
+                                extensions[existingIndex].description = ext.description;
+                                extensions[existingIndex].hasUninstallConfig = ext.hasUninstallConfig;
                             } else {
                                 // Add as enabled (vsix might be missing)
                                 ext.status = 'enabled';
@@ -115,12 +121,18 @@ class Scanner {
                     if (stat.isDirectory()) {
                         const ext = await this.parseDisabledExtension(dirName, disabledPath);
                         if (ext) {
-                            // Check if already in list
-                            const existingIndex = extensions.findIndex(e => e.id === ext.id);
+                            // Check if already in list - match by rawName and version
+                            const existingIndex = extensions.findIndex(e => 
+                                e.rawName === ext.rawName && e.version === ext.version
+                            );
                             if (existingIndex >= 0) {
-                                // Update status to disabled
+                                // Update existing entry with disabled info
                                 extensions[existingIndex].status = 'disabled';
                                 extensions[existingIndex].disabledPath = disabledPath;
+                                extensions[existingIndex].id = ext.id; // Use proper ID from package.json
+                                extensions[existingIndex].publisher = ext.publisher;
+                                extensions[existingIndex].description = ext.description;
+                                extensions[existingIndex].hasUninstallConfig = ext.hasUninstallConfig;
                             } else {
                                 // Add as disabled
                                 ext.status = 'disabled';
@@ -164,14 +176,25 @@ class Scanner {
         
         try {
             // Extract extension info from vsix filename
-            // Format: publisher.name-version.vsix
-            const match = vsixFile.match(/^(.+?)\.(.+?)-(\d+\.\d+\.\d+)\.vsix$/);
+            // Format: publisher.name-version.vsix OR name-version.vsix
+            let match = vsixFile.match(/^(.+?)\.(.+?)-(\d+\.\d+\.\d+)\.vsix$/);
+            let publisher, name, version;
             
-            if (!match) {
-                return null;
+            if (match) {
+                // Format: publisher.name-version.vsix
+                [, publisher, name, version] = match;
+            } else {
+                // Try format: name-version.vsix (without publisher)
+                match = vsixFile.match(/^(.+?)-(\d+\.\d+\.\d+)\.vsix$/);
+                if (match) {
+                    [, name, version] = match;
+                    publisher = 'Unknown';
+                } else {
+                    // No version format matched
+                    return null;
+                }
             }
 
-            const [, publisher, name, version] = match;
             const id = `${publisher}.${name}`;
             
             // Get installation date from file modified time
@@ -181,6 +204,7 @@ class Scanner {
             return {
                 id,
                 name: this.formatName(name),
+                rawName: name, // Store raw name for matching
                 publisher,
                 version,
                 status: 'disabled', // Default, will be updated if found in deployedPlugins
@@ -220,14 +244,20 @@ class Scanner {
             const stats = fs.statSync(dirPath);
             const installedDate = this.formatDate(stats.mtime);
             
+            // Find corresponding .vsix file
+            const vsixFileName = dirName + '.vsix';
+            const vsixPath = path.join(this.extensionsDir, vsixFileName);
+            
             return {
                 id: `${packageJson.publisher}.${packageJson.name}`,
                 name: packageJson.displayName || this.formatName(packageJson.name),
+                rawName: packageJson.name, // Store raw name for matching
                 publisher: packageJson.publisher,
                 version: packageJson.version,
                 description: packageJson.description || '',
                 status: 'enabled',
                 deployedPath: dirPath,
+                vsixPath: fs.existsSync(vsixPath) ? vsixPath : undefined,
                 size: this.getDirectorySize(dirPath),
                 hasUninstallConfig: hasUninstallConfig,
                 installedDate: installedDate
@@ -262,14 +292,20 @@ class Scanner {
             const stats = fs.statSync(dirPath);
             const installedDate = this.formatDate(stats.mtime);
             
+            // Find corresponding .vsix file in disabled directory
+            const vsixFileName = dirName + '.vsix';
+            const vsixPath = path.join(this.disabledDir, vsixFileName);
+            
             return {
                 id: `${packageJson.publisher}.${packageJson.name}`,
                 name: packageJson.displayName || this.formatName(packageJson.name),
+                rawName: packageJson.name, // Store raw name for matching
                 publisher: packageJson.publisher,
                 version: packageJson.version,
                 description: packageJson.description || '',
                 status: 'disabled',
                 disabledPath: dirPath,
+                vsixPath: fs.existsSync(vsixPath) ? vsixPath : undefined,
                 size: this.getDirectorySize(dirPath),
                 hasUninstallConfig: hasUninstallConfig,
                 installedDate: installedDate
