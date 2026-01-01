@@ -1,6 +1,6 @@
 /*
  * Extension Manager - Commands
- * Copyright 2025 Monster Maker
+ * Copyright 2026 Monster Maker
  * 
  * Licensed under the Apache License, Version 2.0
  */
@@ -146,7 +146,7 @@ async function uninstallExtension(extensionId, scanner, controller, treeProvider
         const result = await controller.uninstallExtension(extensionId);
         
         if (result.success) {
-            vscode.window.showInformationMessage(t('status.uninstalled'));
+            vscode.window.showInformationMessage(t('restart.message'));
             treeProvider.refresh();
         } else {
             vscode.window.showErrorMessage(t(result.message));
@@ -161,6 +161,9 @@ async function uninstallExtension(extensionId, scanner, controller, treeProvider
  * @param {Function} t - Translation function
  */
 async function installExtension(controller, treeProvider, t) {
+    const InstallDialog = require('../ui/installDialog');
+    const installDialog = new InstallDialog(controller, treeProvider, t);
+    
     const fileUri = await vscode.window.showOpenDialog({
         canSelectMany: false,
         filters: {
@@ -175,68 +178,23 @@ async function installExtension(controller, treeProvider, t) {
 
     const vsixPath = fileUri[0].fsPath;
 
-    vscode.window.withProgress({
+    await vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
-        title: t('install.processing'),
+        title: t('security.scanning'),
         cancellable: false
     }, async () => {
         const result = await controller.installExtension(vsixPath);
         
-        if (result.success) {
-            vscode.window.showInformationMessage(t('install.success'));
-            treeProvider.refresh();
-        } else if (result.needsUpgrade && result.versionInfo) {
-            // Version conflict detected
-            const info = result.versionInfo;
-            let message = '';
-            let button = '';
+        if (result.message === 'needsConfirmation') {
+            // Show unified installation dialog
+            const confirmed = await installDialog.show(result);
             
-            if (info.action === 'upgrade') {
-                message = t('install.upgradeVersion')
-                    .replace('{0}', info.extensionName || result.fileName)
-                    .replace('{1}', info.currentVersion)
-                    .replace('{2}', info.newVersion);
-                button = t('install.upgradeButton');
-            } else if (info.action === 'downgrade') {
-                message = t('install.downgradeVersion')
-                    .replace('{0}', info.extensionName || result.fileName)
-                    .replace('{1}', info.currentVersion)
-                    .replace('{2}', info.newVersion);
-                button = t('install.downgradeButton');
-            } else {
-                // Reinstall same version
-                message = t('install.reinstallVersion')
-                    .replace('{0}', info.extensionName || result.fileName)
-                    .replace('{1}', info.currentVersion || info.newVersion);
-                button = t('install.reinstallButton');
-            }
-            
-            const choice = await vscode.window.showWarningMessage(
-                message,
-                { modal: true },
-                button
-            );
-            
-            if (choice === button) {
-                // Perform upgrade/downgrade/reinstall
-                const oldFile = info.currentFile || result.fileName;
-                
-                vscode.window.withProgress({
-                    location: vscode.ProgressLocation.Notification,
-                    title: t('install.processing'),
-                    cancellable: false
-                }, async () => {
-                    const upgradeResult = await controller.upgradeExtension(oldFile, vsixPath);
-                    
-                    if (upgradeResult.success) {
-                        vscode.window.showInformationMessage(t('install.success'));
-                        treeProvider.refresh();
-                    } else {
-                        vscode.window.showErrorMessage(t(upgradeResult.message));
-                    }
-                });
+            if (confirmed) {
+                // User confirmed - proceed with installation
+                await installDialog.performInstallation(result);
             }
         } else {
+            // Error case
             vscode.window.showErrorMessage(t(result.message));
         }
     });

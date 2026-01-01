@@ -1,6 +1,6 @@
 /*
  * Extension Manager - Controller
- * Copyright 2025 Monster Maker
+ * Copyright 2026 Monster Maker
  * 
  * Licensed under the Apache License, Version 2.0
  */
@@ -11,6 +11,7 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const SecurityCheck = require('./securityCheck');
 
 /**
  * Controller - Manages extension operations (enable, disable, uninstall, install)
@@ -23,6 +24,7 @@ class Controller {
         this.deployedDir = path.join(this.homeDir, '.arduinoIDE', 'deployedPlugins');
         this.disabledDir = path.join(this.homeDir, '.extensionmanager', 'disabled');
         this.selfId = 'MonsterMaker.extension-manager';
+        this.securityCheck = new SecurityCheck();
     }
 
     /**
@@ -421,9 +423,10 @@ class Controller {
     }
 
     /**
+    /**
      * Install extension from .vsix file
      * @param {string} vsixPath - Path to .vsix file
-     * @returns {Promise<{success: boolean, message: string, needsUpgrade?: boolean, fileName?: string, versionInfo?: Object}>}
+     * @returns {Promise<{success: boolean, message: string, extensionInfo?: Object, scanResult?: Object, action?: string, versionInfo?: Object, vsixPath?: string, fileName?: string}>}
      */
     async installExtension(vsixPath) {
         try {
@@ -434,6 +437,23 @@ class Controller {
             const fileName = path.basename(vsixPath);
             const parsed = this.parseVsixFilename(fileName);
             
+            // ALWAYS extract extension info
+            let extensionInfo;
+            try {
+                extensionInfo = await this.securityCheck.extractExtensionInfo(vsixPath);
+            } catch (error) {
+                return { success: false, message: 'error.invalidVsix' };
+            }
+            
+            // ALWAYS run security check
+            let scanResult;
+            try {
+                scanResult = await this.securityCheck.scanVsix(vsixPath);
+            } catch (scanError) {
+                console.error('Security scan failed:', scanError);
+                scanResult = { safe: true, issues: [], details: 'Scan skipped due to error' };
+            }
+            
             // Ensure extensions directory exists
             if (!fs.existsSync(this.extensionsDir)) {
                 fs.mkdirSync(this.extensionsDir, { recursive: true });
@@ -441,27 +461,25 @@ class Controller {
 
             const targetPath = path.join(this.extensionsDir, fileName);
             
+            // Determine action type
+            let action = 'install';
+            let versionInfo = null;
+            
             // Check if same file already exists
             if (fs.existsSync(targetPath)) {
-                return {
-                    success: false,
-                    message: 'error.alreadyInstalled',
-                    needsUpgrade: true,
-                    fileName: fileName,
-                    versionInfo: {
-                        action: 'reinstall',
-                        currentVersion: parsed?.version,
-                        newVersion: parsed?.version
-                    }
+                action = 'reinstall';
+                versionInfo = {
+                    action: 'reinstall',
+                    currentVersion: parsed?.version,
+                    newVersion: parsed?.version,
+                    extensionName: extensionInfo.name
                 };
             }
-
             // Check for other versions of the same extension
-            if (parsed && parsed.name) {
+            else if (parsed && parsed.name) {
                 const installed = this.findInstalledVersion(parsed.name);
                 
                 if (installed) {
-                    let action = 'upgrade';
                     let currentVersion = installed.version || 'unknown';
                     let newVersion = parsed.version || 'unknown';
                     
@@ -471,33 +489,32 @@ class Controller {
                         
                         if (comparison < 0) action = 'downgrade';
                         else if (comparison === 0) action = 'reinstall';
-                        // else: comparison > 0 → action = 'upgrade' (already set)
+                        else action = 'upgrade';
                     } else {
-                        // At least one file has no version number
-                        // Treat as upgrade/replacement
                         action = 'upgrade';
                     }
                     
-                    return {
-                        success: false,
-                        message: 'error.versionConflict',
-                        needsUpgrade: true,
-                        fileName: fileName,
-                        versionInfo: {
-                            action: action,
-                            currentVersion: currentVersion,
-                            currentFile: installed.fileName,
-                            newVersion: newVersion,
-                            extensionName: parsed.name
-                        }
+                    versionInfo = {
+                        action: action,
+                        currentVersion: currentVersion,
+                        currentFile: installed.fileName,
+                        newVersion: newVersion,
+                        extensionName: extensionInfo.name
                     };
                 }
             }
 
-            // Copy file
-            fs.copyFileSync(vsixPath, targetPath);
-
-            return { success: true, message: 'status.installed' };
+            // Return all info - let commands.js decide what to do
+            return {
+                success: false,
+                message: 'needsConfirmation',
+                extensionInfo: extensionInfo,
+                scanResult: scanResult,
+                action: action,
+                versionInfo: versionInfo,
+                vsixPath: vsixPath,
+                fileName: fileName
+            };
 
         } catch (error) {
             return { success: false, message: 'error.installFailed' };

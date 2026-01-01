@@ -1,6 +1,6 @@
 /*
  * Extension Manager - Locale Loader
- * Copyright 2025 Monster Maker
+ * Copyright 2026 Monster Maker
  * 
  * Licensed under the Apache License, Version 2.0
  */

@@ -9,6 +9,7 @@ Manage installed extensions in Arduino IDE 2.x - enable, disable, install, and u
 - ✅ **Enable/Disable extensions** - moves extensions between active and disabled state
 - 🗑️ **Uninstall extensions** completely (removes .vsix files and all data)
 - 📥 **Install extensions** from .vsix files with automatic upgrade detection
+- 🔒 **Security scanning** - analyzes extensions before installation for suspicious code patterns
 - ℹ️ **Extension details** - view version, publisher, size, and location in a dedicated panel
 - 🌍 **Automatic language detection** (English/German) based on IDE settings
 - 🎯 **Clean interface** - integrated into Explorer sidebar, no cluttered Activity Bar
@@ -50,6 +51,8 @@ chmod +x install_arduinoplus_macos.sh
    - ℹ️ **About** Extension Manager
 
 ### Installing Extensions
+- When installing a .vsix file, Extension Manager scans it for security issues (eval usage, file access, network requests, etc.)
+- The security scan shows severity levels (🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low) and details about permissions the extension requires
 - If you install a .vsix file that already exists, you'll be asked if you want to replace it
 - The extension is installed to `~/.arduinoIDE/extensions/`
 - Restart the IDE to activate newly installed extensions
@@ -102,4 +105,3 @@ Extension Manager is free and open source. If it saved your day, consider buying
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Buy%20me%20a%20coffee-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/nikolairadke)
 
 Every contribution helps keep this project alive! 🚀
-

@@ -1,6 +1,6 @@
 /*
  * Extension Manager - Extension Info Panel
- * Copyright 2025 Monster Maker
+ * Copyright 2026 Monster Maker
  * 
  * Licensed under the Apache License, Version 2.0
  */
@@ -153,11 +153,6 @@ class InfoPanel {
     getWebviewContent(extension) {
         const isEnabled = extension.status === 'enabled';
         const isSelf = extension.id === 'MonsterMaker.extension-manager';
-        
-        // Debug
-        const enabledText = this.t('tree.enabled');
-        const disabledText = this.t('tree.disabled');
-        console.log('InfoPanel: isEnabled=', isEnabled, 'enabledText=', enabledText, 'disabledText=', disabledText);
 
         return `<!DOCTYPE html>
 <html lang="de">
@@ -269,7 +264,7 @@ class InfoPanel {
 <body>
     <div class="header">
         <h1>${extension.name}</h1>
-        <div class="publisher">${extension.publisher}</div>
+        ${extension.publisher ? `<div class="publisher">${extension.publisher}</div>` : ''}
     </div>
 
     <div class="info-grid">
