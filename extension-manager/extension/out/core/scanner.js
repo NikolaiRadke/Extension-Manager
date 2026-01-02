@@ -10,6 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const fileManager = require('../utils/fileManager');
 
 /**
  * Scanner - Scans and manages extension data
@@ -111,7 +112,7 @@ class Scanner {
                             description: info.description,
                             status: 'pending',
                             vsixPath: info.vsixPath,
-                            size: fs.existsSync(info.vsixPath) ? this.getFileSize(info.vsixPath) : 'Unknown',
+                            size: fs.existsSync(info.vsixPath) ? fileManager.getFileSize(info.vsixPath) : 'Unknown',
                             installedDate: this.formatDate(new Date(info.installedDate))
                         });
                         
@@ -151,12 +152,13 @@ class Scanner {
     }
 
     /**
-     * Parse extension data from deployed plugin directory
+     * Parse extension data from directory (common for deployed and disabled)
      * @param {string} dirName - Directory name
      * @param {string} dirPath - Full directory path
+     * @param {string} type - 'deployed' or 'disabled'
      * @returns {Object|null} Extension object or null
      */
-    async parseDeployedExtension(dirName, dirPath) {
+    async parseExtension(dirName, dirPath, type) {
         try {
             const packageJsonPath = path.join(dirPath, 'extension', 'package.json');
             
@@ -175,26 +177,33 @@ class Scanner {
             const installedDate = this.formatDate(stats.mtime);
             
             // Find corresponding .vsix file
-            // Arduino IDE creates directories from vsix filenames, so try dirName + .vsix
             let vsixPath = undefined;
             const expectedVsixName = dirName + '.vsix';
-            const expectedPath = path.join(this.extensionsDir, expectedVsixName);
             
-            if (fs.existsSync(expectedPath)) {
-                vsixPath = expectedPath;
+            if (type === 'deployed') {
+                const expectedPath = path.join(this.extensionsDir, expectedVsixName);
+                if (fs.existsSync(expectedPath)) {
+                    vsixPath = expectedPath;
+                }
+            } else if (type === 'disabled') {
+                const expectedPath = path.join(this.disabledDir, expectedVsixName);
+                if (fs.existsSync(expectedPath)) {
+                    vsixPath = expectedPath;
+                }
             }
             
             return {
                 id: `${packageJson.publisher}.${packageJson.name}`,
                 name: packageJson.displayName || this.formatName(packageJson.name),
-                rawName: packageJson.name, // Store raw name for matching
+                rawName: packageJson.name,
                 publisher: packageJson.publisher,
                 version: packageJson.version,
                 description: packageJson.description || '',
-                status: 'enabled',
-                deployedPath: dirPath,
-                vsixPath: vsixPath, // Already undefined if not found
-                size: this.getDirectorySize(dirPath),
+                status: type === 'deployed' ? 'enabled' : 'disabled',
+                deployedPath: type === 'deployed' ? dirPath : undefined,
+                disabledPath: type === 'disabled' ? dirPath : undefined,
+                vsixPath: vsixPath,
+                size: fileManager.getDirectorySize(dirPath),
                 hasUninstallConfig: hasUninstallConfig,
                 installedDate: installedDate
             };
@@ -205,56 +214,23 @@ class Scanner {
     }
 
     /**
+     * Parse extension data from deployed plugin directory
+     * @param {string} dirName - Directory name
+     * @param {string} dirPath - Full directory path
+     * @returns {Object|null} Extension object or null
+     */
+    async parseDeployedExtension(dirName, dirPath) {
+        return await this.parseExtension(dirName, dirPath, 'deployed');
+    }
+
+    /**
      * Parse extension data from disabled directory
      * @param {string} dirName - Directory name
      * @param {string} dirPath - Full directory path
      * @returns {Object|null} Extension object or null
      */
     async parseDisabledExtension(dirName, dirPath) {
-        try {
-            const packageJsonPath = path.join(dirPath, 'extension', 'package.json');
-            
-            if (!fs.existsSync(packageJsonPath)) {
-                return null;
-            }
-
-            const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-            
-            // Check for uninstall.json
-            const uninstallJsonPath = path.join(dirPath, 'extension', 'uninstall.json');
-            const hasUninstallConfig = fs.existsSync(uninstallJsonPath);
-            
-            // Get installation date from directory creation time
-            const stats = fs.statSync(dirPath);
-            const installedDate = this.formatDate(stats.mtime);
-            
-            // Find corresponding .vsix file in disabled directory
-            let vsixPath = undefined;
-            const expectedVsixName = dirName + '.vsix';
-            const expectedPath = path.join(this.disabledDir, expectedVsixName);
-            
-            if (fs.existsSync(expectedPath)) {
-                vsixPath = expectedPath;
-            }
-            
-            return {
-                id: `${packageJson.publisher}.${packageJson.name}`,
-                name: packageJson.displayName || this.formatName(packageJson.name),
-                rawName: packageJson.name, // Store raw name for matching
-                publisher: packageJson.publisher,
-                version: packageJson.version,
-                description: packageJson.description || '',
-                status: 'disabled',
-                disabledPath: dirPath,
-                vsixPath: vsixPath, // Already undefined if not found
-                size: this.getDirectorySize(dirPath),
-                hasUninstallConfig: hasUninstallConfig,
-                installedDate: installedDate
-            };
-
-        } catch (error) {
-            return null;
-        }
+        return await this.parseExtension(dirName, dirPath, 'disabled');
     }
 
     /**
@@ -267,61 +243,6 @@ class Scanner {
             .split('-')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
-    }
-
-    /**
-     * Get file size in human-readable format
-     * @param {string} filePath - Path to file
-     * @returns {string} Formatted size
-     */
-    getFileSize(filePath) {
-        try {
-            const stats = fs.statSync(filePath);
-            const bytes = stats.size;
-            
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-            
-        } catch (error) {
-            return 'Unknown';
-        }
-    }
-
-    /**
-     * Get directory size recursively
-     * @param {string} dirPath - Path to directory
-     * @returns {string} Formatted size
-     */
-    getDirectorySize(dirPath) {
-        try {
-            let totalSize = 0;
-            
-            const calculateSize = (dir) => {
-                const files = fs.readdirSync(dir);
-                
-                for (const file of files) {
-                    const filePath = path.join(dir, file);
-                    const stats = fs.statSync(filePath);
-                    
-                    if (stats.isDirectory()) {
-                        calculateSize(filePath);
-                    } else {
-                        totalSize += stats.size;
-                    }
-                }
-            };
-            
-            calculateSize(dirPath);
-            
-            const bytes = totalSize;
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-            
-        } catch (error) {
-            return 'Unknown';
-        }
     }
 
     /**

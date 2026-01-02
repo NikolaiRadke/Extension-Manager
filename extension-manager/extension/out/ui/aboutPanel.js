@@ -11,6 +11,7 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const fileManager = require('../utils/fileManager');
 
 /**
  * AboutPanel - Shows Extension Manager information and uninstall option
@@ -135,7 +136,7 @@ class AboutPanel {
             for (const dir of config.directories) {
                 const resolved = this.resolvePath(dir);
                 if (fs.existsSync(resolved)) {
-                    this.deleteDirectory(resolved);
+                    fileManager.deleteDirectory(resolved);
                 }
             }
         }
@@ -157,7 +158,7 @@ class AboutPanel {
                         for (const f of files) {
                             const fullPath = path.join(dir, f);
                             if (fs.statSync(fullPath).isDirectory()) {
-                                this.deleteDirectory(fullPath);
+                                fileManager.deleteDirectory(fullPath);
                             } else {
                                 fs.unlinkSync(fullPath);
                             }
@@ -166,7 +167,7 @@ class AboutPanel {
                 } else {
                     if (fs.existsSync(resolved)) {
                         if (fs.statSync(resolved).isDirectory()) {
-                            this.deleteDirectory(resolved);
+                            fileManager.deleteDirectory(resolved);
                         } else {
                             fs.unlinkSync(resolved);
                         }
@@ -187,13 +188,13 @@ class AboutPanel {
 
         // Delete .extensionmanager directory
         if (fs.existsSync(managerDir)) {
-            this.deleteDirectory(managerDir);
+            fileManager.deleteDirectory(managerDir);
         }
 
         // Delete deployed directory
         const deployedPath = path.join(deployedDir, 'extension-manager');
         if (fs.existsSync(deployedPath)) {
-            this.deleteDirectory(deployedPath);
+            fileManager.deleteDirectory(deployedPath);
         }
 
         // Delete .vsix file(s)
@@ -206,29 +207,6 @@ class AboutPanel {
                 fs.unlinkSync(vsixPath);
             }
         }
-    }
-
-    /**
-     * Delete directory recursively
-     */
-    deleteDirectory(dirPath) {
-        if (!fs.existsSync(dirPath)) {
-            return;
-        }
-
-        const entries = fs.readdirSync(dirPath, { withFileTypes: true });
-
-        for (const entry of entries) {
-            const fullPath = path.join(dirPath, entry.name);
-
-            if (entry.isDirectory()) {
-                this.deleteDirectory(fullPath);
-            } else {
-                fs.unlinkSync(fullPath);
-            }
-        }
-
-        fs.rmdirSync(dirPath);
     }
 
     /**

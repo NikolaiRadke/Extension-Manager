@@ -12,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const SecurityCheck = require('./securityCheck');
+const fileManager = require('../utils/fileManager');
 
 /**
  * Controller - Manages extension operations (enable, disable, uninstall, install)
@@ -117,7 +118,7 @@ class Controller {
             const deployedPath = path.join(this.deployedDir, path.basename(disabledPath));
 
             // Move directory back to deployed
-            this.moveDirectory(disabledPath, deployedPath);
+            fileManager.moveDirectory(disabledPath, deployedPath);
 
             // Move .vsix file back to extensions
             const dirName = path.basename(deployedPath);
@@ -167,7 +168,7 @@ class Controller {
             this.scanner.ensureDirectories();
 
             // Move directory to disabled
-            this.moveDirectory(deployedPath, disabledPath);
+            fileManager.moveDirectory(deployedPath, disabledPath);
 
             // Move .vsix file to disabled directory
             const dirName = path.basename(deployedPath);
@@ -378,7 +379,7 @@ class Controller {
                 const resolved = this.resolvePath(dir);
                 if (fs.existsSync(resolved)) {
                     try {
-                        this.deleteDirectory(resolved);
+                        fileManager.deleteDirectory(resolved);
                         results.deleted.push(resolved);
                     } catch (error) {
                         results.failed.push(resolved);
@@ -394,7 +395,7 @@ class Controller {
                 if (fs.existsSync(resolved)) {
                     try {
                         if (fs.statSync(resolved).isDirectory()) {
-                            this.deleteDirectory(resolved);
+                            fileManager.deleteDirectory(resolved);
                         } else {
                             fs.unlinkSync(resolved);
                         }
@@ -433,12 +434,12 @@ class Controller {
     async executeStandardUninstall(extension) {
         // Delete deployed directory if exists
         if (extension.deployedPath && fs.existsSync(extension.deployedPath)) {
-            this.deleteDirectory(extension.deployedPath);
+            fileManager.deleteDirectory(extension.deployedPath);
         }
 
         // Delete disabled directory if exists
         if (extension.disabledPath && fs.existsSync(extension.disabledPath)) {
-            this.deleteDirectory(extension.disabledPath);
+            fileManager.deleteDirectory(extension.disabledPath);
         }
 
         // Delete .vsix file using path from scanner
@@ -578,12 +579,12 @@ class Controller {
                     
                     // Delete deployed directory
                     if (ext.deployedPath && fs.existsSync(ext.deployedPath)) {
-                        this.deleteDirectory(ext.deployedPath);
+                        fileManager.deleteDirectory(ext.deployedPath);
                     }
                     
                     // Delete disabled directory
                     if (ext.disabledPath && fs.existsSync(ext.disabledPath)) {
-                        this.deleteDirectory(ext.disabledPath);
+                        fileManager.deleteDirectory(ext.disabledPath);
                     }
                 }
             }
@@ -598,68 +599,6 @@ class Controller {
         }
     }
 
-    /**
-     * Move directory from source to destination
-     * @param {string} source - Source directory path
-     * @param {string} destination - Destination directory path
-     */
-    moveDirectory(source, destination) {
-        try {
-            fs.renameSync(source, destination);
-        } catch (error) {
-            // Fallback: copy and delete
-            this.copyDirectory(source, destination);
-            this.deleteDirectory(source);
-        }
-    }
-
-    /**
-     * Copy directory recursively
-     * @param {string} source - Source directory path
-     * @param {string} destination - Destination directory path
-     */
-    copyDirectory(source, destination) {
-        if (!fs.existsSync(destination)) {
-            fs.mkdirSync(destination, { recursive: true });
-        }
-
-        const entries = fs.readdirSync(source, { withFileTypes: true });
-
-        for (const entry of entries) {
-            const srcPath = path.join(source, entry.name);
-            const destPath = path.join(destination, entry.name);
-
-            if (entry.isDirectory()) {
-                this.copyDirectory(srcPath, destPath);
-            } else {
-                fs.copyFileSync(srcPath, destPath);
-            }
-        }
-    }
-
-    /**
-     * Delete directory recursively
-     * @param {string} dirPath - Directory path to delete
-     */
-    deleteDirectory(dirPath) {
-        if (!fs.existsSync(dirPath)) {
-            return;
-        }
-
-        const entries = fs.readdirSync(dirPath, { withFileTypes: true });
-
-        for (const entry of entries) {
-            const fullPath = path.join(dirPath, entry.name);
-
-            if (entry.isDirectory()) {
-                this.deleteDirectory(fullPath);
-            } else {
-                fs.unlinkSync(fullPath);
-            }
-        }
-
-        fs.rmdirSync(dirPath);
-    }
 }
 
 module.exports = Controller;
