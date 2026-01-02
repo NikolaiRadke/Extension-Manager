@@ -133,7 +133,7 @@
         },
         {
           "command": "extensionManager.uninstall",
-          "when": "view == extensionManager.extensionTree && viewItem =~ /extension/",
+          "when": "view == extensionManager.extensionTree && viewItem =~ /extension/ && viewItem != extension-self",
           "group": "inline@3"
         }
       ]

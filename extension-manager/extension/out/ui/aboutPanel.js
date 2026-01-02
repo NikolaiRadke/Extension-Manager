@@ -16,7 +16,8 @@ const os = require('os');
  * AboutPanel - Shows Extension Manager information and uninstall option
  */
 class AboutPanel {
-    constructor(t) {
+    constructor(treeProvider, t) {
+        this.treeProvider = treeProvider;
         this.t = t;
         this.panel = null;
     }
@@ -86,6 +87,7 @@ class AboutPanel {
             }
 
             vscode.window.showInformationMessage(this.t('about.uninstallSuccess'));
+            this.treeProvider.refresh();
             
             if (this.panel) {
                 this.panel.dispose();

@@ -626,7 +626,8 @@ class SecurityCheck {
             }
             
             return {
-                name: pkg.displayName || pkg.name,
+                name: pkg.name,
+                displayName: pkg.displayName || pkg.name, 
                 version: pkg.version,
                 publisher: pkg.publisher,
                 description: pkg.description || '',

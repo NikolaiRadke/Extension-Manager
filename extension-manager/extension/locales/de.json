@@ -3,6 +3,7 @@
   "tree.empty": "Keine Extensions gefunden",
   "tree.enabled": "Aktiviert",
   "tree.disabled": "Deaktiviert",
+  "tree.pending": "Wartet auf Neustart",
   "command.showInfo": "Extension-Info anzeigen",
   "status.scanning": "Scanne Extensions...",
   "status.loading": "Lade Extension-Daten...",

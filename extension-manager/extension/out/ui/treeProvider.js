@@ -73,9 +73,17 @@ class TreeProvider {
         );
 
         // Set icon based on status
-        if (extension.status === 'enabled') {
+        const isSelf = extension.id === 'MonsterMaker.extension-manager';
+
+        if (isSelf) {
+            item.iconPath = new vscode.ThemeIcon('check', new vscode.ThemeColor('testing.iconPassed'));
+            item.contextValue = 'extension-self';
+        } else if (extension.status === 'enabled') {
             item.iconPath = new vscode.ThemeIcon('check', new vscode.ThemeColor('testing.iconPassed'));
             item.contextValue = 'extension-enabled';
+        } else if (extension.status === 'pending') {
+            item.iconPath = new vscode.ThemeIcon('watch', new vscode.ThemeColor('list.warningForeground'));
+            item.contextValue = 'extension-pending';
         } else {
             item.iconPath = new vscode.ThemeIcon('circle-slash', new vscode.ThemeColor('testing.iconFailed'));
             item.contextValue = 'extension-disabled';
@@ -83,7 +91,9 @@ class TreeProvider {
 
         // Description shows version and status
         const statusText = extension.status === 'enabled' 
-            ? this.t('tree.enabled') 
+            ? this.t('tree.enabled')
+            : extension.status === 'pending'
+            ? this.t('tree.pending')
             : this.t('tree.disabled');
         item.description = `v${extension.version} • ${statusText}`;
 

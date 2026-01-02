@@ -112,7 +112,7 @@ class InstallDialog {
      * @param {Object} result - Result from controller.installExtension()
      */
     async performInstallation(result) {
-        const { vsixPath, fileName, versionInfo, action } = result;
+        const { vsixPath, fileName, versionInfo, action, extensionInfo } = result;
         
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
@@ -120,10 +120,10 @@ class InstallDialog {
             cancellable: false
         }, async () => {
             let installResult;
+            const targetPath = path.join(this.controller.extensionsDir, fileName);
             
             if (action === 'install') {
-                // Simple install - just copy file
-                const targetPath = path.join(this.controller.extensionsDir, fileName);
+                // Simple install - copy file with original name
                 fs.copyFileSync(vsixPath, targetPath);
                 installResult = { success: true };
             } else {
@@ -133,6 +133,9 @@ class InstallDialog {
             }
             
             if (installResult.success) {
+                // Add to pending.json (will be shown in tree until deployed)
+                this.controller.addPendingExtension(extensionInfo, targetPath);
+                
                 vscode.window.showInformationMessage(this.t('install.success'));
                 this.treeProvider.refresh();
             } else {

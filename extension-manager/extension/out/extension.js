@@ -46,8 +46,8 @@ async function activate(context) {
 
     // Initialize UI modules
     treeProvider = new TreeProvider(scanner, t);
-    infoPanel = new InfoPanel(scanner, controller, t);
-    aboutPanel = new AboutPanel(t);
+    infoPanel = new InfoPanel(scanner, controller, treeProvider, t);
+    aboutPanel = new AboutPanel(treeProvider, t);
 
     // Register tree view
     const treeView = vscode.window.createTreeView('extensionManager.extensionTree', {

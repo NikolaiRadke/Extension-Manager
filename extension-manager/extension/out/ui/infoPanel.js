@@ -13,9 +13,10 @@ const vscode = require('vscode');
  * InfoPanel - Shows detailed extension information in WebView
  */
 class InfoPanel {
-    constructor(scanner, controller, t) {
+    constructor(scanner, controller, treeProvider, t) {
         this.scanner = scanner;
         this.controller = controller;
+        this.treeProvider = treeProvider;
         this.t = t;
         this.panel = null;
         this.currentExtensionId = null;
@@ -143,6 +144,7 @@ class InfoPanel {
                 this.panel.webview.html = this.getWebviewContent(extension);
             }
         }
+        this.treeProvider.refresh();
     }
 
     /**
@@ -152,6 +154,7 @@ class InfoPanel {
      */
     getWebviewContent(extension) {
         const isEnabled = extension.status === 'enabled';
+        const isPending = extension.status === 'pending';
         const isSelf = extension.id === 'MonsterMaker.extension-manager';
 
         return `<!DOCTYPE html>
@@ -304,7 +307,11 @@ class InfoPanel {
     ` : ''}
 
     <div class="actions">
-        ${isEnabled ? `
+        ${isPending ? `
+            <button class="btn-primary" disabled>
+                ${this.t('tree.pending')}
+            </button>
+        ` : isEnabled ? `
             <button class="btn-primary" onclick="disableExtension()" ${isSelf ? 'disabled' : ''}>
                 ${this.t('button.disable')}
             </button>
@@ -313,7 +320,7 @@ class InfoPanel {
                 ${this.t('button.enable')}
             </button>
         `}
-        <button class="btn-danger" onclick="uninstallExtension()" ${isSelf ? 'disabled' : ''}>
+        <button class="btn-danger" onclick="uninstallExtension()" ${isSelf || isPending ? 'disabled' : ''}>
             ${this.t('button.uninstall')}
         </button>
     </div>
