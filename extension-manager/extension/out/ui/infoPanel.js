@@ -128,6 +128,7 @@ class InfoPanel {
             if (result.success) {
                 vscode.window.showInformationMessage(this.t('status.uninstalled'));
                 this.panel?.dispose();
+                this.treeProvider.refresh();
             } else {
                 vscode.window.showErrorMessage(this.t(result.message));
             }
