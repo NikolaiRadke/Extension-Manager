@@ -545,8 +545,6 @@ class Controller {
             const newPath = path.join(this.extensionsDir, newFileName);
             
             // Extract extension info to find all old versions
-            const SecurityCheck = require('./securityCheck');
-            const securityCheck = new SecurityCheck();
             let extensionInfo;
             try {
                 extensionInfo = await securityCheck.extractExtensionInfo(vsixPath);

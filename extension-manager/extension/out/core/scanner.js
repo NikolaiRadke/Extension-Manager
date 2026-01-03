@@ -35,12 +35,8 @@ class Scanner {
      * Ensure required directories exist
      */
     ensureDirectories() {
-        if (!fs.existsSync(this.managerDir)) {
-            fs.mkdirSync(this.managerDir, { recursive: true, mode: 0o700 });
-        }
-        if (!fs.existsSync(this.disabledDir)) {
-            fs.mkdirSync(this.disabledDir, { recursive: true, mode: 0o700 });
-        }
+        fileManager.ensureDirectory(this.managerDir, 0o700);
+        fileManager.ensureDirectory(this.disabledDir, 0o700);
     }
 
     /**
