@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { t } = require('../utils/localeLoader');
+const fileManager = require('../utils/fileManager');
 
 /**
  * SecurityCheck - Scans VSIX files for suspicious patterns
@@ -18,7 +19,7 @@ const { t } = require('../utils/localeLoader');
 class SecurityCheck {
     constructor() {
         this.checkDir = path.join(os.homedir(), '.extensionmanager', 'check');
-        this.ensureCheckDirectory();
+        fileManager.ensureDirectory(this.checkDir, 0o700);
         
         this.suspiciousPatterns = [
             {
@@ -69,15 +70,6 @@ class SecurityCheck {
     }
 
     /**
-     * Ensure check directory exists
-     */
-    ensureCheckDirectory() {
-        if (!fs.existsSync(this.checkDir)) {
-            fs.mkdirSync(this.checkDir, { recursive: true, mode: 0o700 });
-        }
-    }
-
-    /**
      * Scan VSIX file for security issues
      * @param {string} vsixPath - Path to .vsix file
      * @returns {Promise<{safe: boolean, issues: Array, details: string}>}
@@ -98,11 +90,9 @@ class SecurityCheck {
             // Extract extension name from package.json
             let extensionName = null;
             const packageJsonPath = path.join(tempDir, 'extension', 'package.json');
-            if (fs.existsSync(packageJsonPath)) {
-                try {
-                    const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-                    extensionName = pkg.displayName || pkg.name;
-                } catch (e) {}
+            const pkg = fileManager.readJsonFile(packageJsonPath);
+            if (pkg) {
+                extensionName = pkg.displayName || pkg.name;
             }
             
             // 5. Check file size
@@ -137,9 +127,7 @@ class SecurityCheck {
         
         const { execSync } = require('child_process');
         
-        if (!fs.existsSync(targetDir)) {
-            fs.mkdirSync(targetDir, { recursive: true });
-        }
+        fileManager.ensureDirectory(targetDir);
         
         try {
             // Try unzip (Linux/Mac)
@@ -257,18 +245,16 @@ class SecurityCheck {
         const issues = [];
         const packageJsonPath = path.join(extractedPath, 'extension', 'package.json');
         
-        if (!fs.existsSync(packageJsonPath)) {
+        const packageJson = fileManager.readJsonFile(packageJsonPath);
+        if (!packageJson) {
             return issues;
         }
         
-        try {
-            const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-            
-            // Check dependencies
-            const allDeps = {
-                ...packageJson.dependencies,
-                ...packageJson.devDependencies
-            };
+        // Check dependencies
+        const allDeps = {
+            ...packageJson.dependencies,
+            ...packageJson.devDependencies
+        };
             
             const suspiciousDeps = [
                 'keytar',
@@ -286,10 +272,6 @@ class SecurityCheck {
                     });
                 }
             }
-            
-        } catch (error) {
-            // Ignore invalid package.json
-        }
         
         return issues;
     }
@@ -350,7 +332,7 @@ class SecurityCheck {
     cleanup(tempDir) {
         try {
             if (fs.existsSync(tempDir)) {
-                fs.rmSync(tempDir, { recursive: true, force: true });
+                fileManager.deleteDirectory(tempDir);
             }
             
             const checkFiles = fs.readdirSync(this.checkDir);
@@ -591,9 +573,7 @@ class SecurityCheck {
         
         try {
             // Create temp directory
-            if (!fs.existsSync(checkDir)) {
-                fs.mkdirSync(checkDir, { recursive: true });
-            }
+            fileManager.ensureDirectory(checkDir);
             
             // Copy VSIX
             const vsixFileName = path.basename(vsixPath);
@@ -605,19 +585,13 @@ class SecurityCheck {
             
             // Read package.json
             const packageJsonPath = path.join(checkDir, 'extension', 'package.json');
-            if (!fs.existsSync(packageJsonPath)) {
+            const pkg = fileManager.readJsonFile(packageJsonPath);
+            if (!pkg) {
                 throw new Error('package.json not found');
             }
             
-            const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-            
-            // Get file size
-            const stats = fs.statSync(vsixPath);
-            const bytes = stats.size;
-            let size = '';
-            if (bytes < 1024) size = bytes + ' B';
-            else if (bytes < 1024 * 1024) size = (bytes / 1024).toFixed(1) + ' KB';
-            else size = (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            // Get file size using fileManager
+            const size = fileManager.getFileSize(vsixPath);
             
             // Cleanup
             this.cleanup(checkDir);

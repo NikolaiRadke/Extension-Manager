@@ -103,15 +103,8 @@ class AboutPanel {
      * Load uninstall.json configuration
      */
     loadUninstallConfig() {
-        try {
-            const configPath = path.join(__dirname, '..', '..', 'uninstall.json');
-            if (!fs.existsSync(configPath)) {
-                return null;
-            }
-            return JSON.parse(fs.readFileSync(configPath, 'utf8'));
-        } catch (error) {
-            return null;
-        }
+        const configPath = path.join(__dirname, '..', '..', 'uninstall.json');
+        return fileManager.readJsonFile(configPath);
     }
 
     /**
@@ -213,13 +206,9 @@ class AboutPanel {
      * Get version from package.json
      */
     getVersion() {
-        try {
-            const packagePath = path.join(__dirname, '..', '..', 'package.json');
-            const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
-            return packageJson.version || '1.0.0';
-        } catch {
-            return '1.0.0';
-        }
+        const packagePath = path.join(__dirname, '..', '..', 'package.json');
+        const packageJson = fileManager.readJsonFile(packagePath);
+        return packageJson ? packageJson.version : '1.0.0';
     }
 
     /**
@@ -309,7 +298,7 @@ class AboutPanel {
     </div>
 
     <div class="info-section">
-        <div class="info-label">${this.t('about.description')}</div>
+        <div class="info-label">Beschreibung</div>
         <div class="info-value">${this.t('extension.description')}</div>
 
         <div class="info-label">${this.t('about.license')}</div>

@@ -91,41 +91,37 @@ class Scanner {
             }
 
             // Scan pending.json for freshly installed extensions
-            if (fs.existsSync(this.pendingFile)) {
-                try {
-                    const pending = JSON.parse(fs.readFileSync(this.pendingFile, 'utf8'));
-                    const updatedPending = {};
-                    
-                    for (const [name, info] of Object.entries(pending)) {
-                        // If already deployed, skip it and clean from pending
-                        if (deployedNames.has(name)) {
-                            continue; // Don't add to updatedPending = will be removed
-                        }
-                        
-                        // Still pending - add to list
-                        extensions.push({
-                            id: `${info.publisher}.${info.name}`,
-                            name: info.displayName || this.formatName(info.name),
-                            rawName: info.name,
-                            publisher: info.publisher,
-                            version: info.version,
-                            description: info.description,
-                            status: 'pending',
-                            vsixPath: info.vsixPath,
-                            size: fs.existsSync(info.vsixPath) ? fileManager.getFileSize(info.vsixPath) : 'Unknown',
-                            installedDate: this.formatDate(new Date(info.installedDate))
-                        });
-                        
-                        // Keep in updated pending
-                        updatedPending[name] = info;
+            const pending = fileManager.readJsonFile(this.pendingFile);
+            if (pending) {
+                const updatedPending = {};
+                
+                for (const [name, info] of Object.entries(pending)) {
+                    // If already deployed, skip it and clean from pending
+                    if (deployedNames.has(name)) {
+                        continue; // Don't add to updatedPending = will be removed
                     }
                     
-                    // Write back cleaned pending.json
-                    if (Object.keys(updatedPending).length !== Object.keys(pending).length) {
-                        fs.writeFileSync(this.pendingFile, JSON.stringify(updatedPending, null, 2), 'utf8');
-                    }
-                } catch (error) {
-                    // Invalid JSON or read error - ignore
+                    // Still pending - add to list
+                    extensions.push({
+                        id: `${info.publisher}.${info.name}`,
+                        name: info.displayName || this.formatName(info.name),
+                        rawName: info.name,
+                        publisher: info.publisher,
+                        version: info.version,
+                        description: info.description,
+                        status: 'pending',
+                        vsixPath: info.vsixPath,
+                        size: fs.existsSync(info.vsixPath) ? fileManager.getFileSize(info.vsixPath) : 'Unknown',
+                        installedDate: this.formatDate(new Date(info.installedDate))
+                    });
+                    
+                    // Keep in updated pending
+                    updatedPending[name] = info;
+                }
+                
+                // Write back cleaned pending.json
+                if (Object.keys(updatedPending).length !== Object.keys(pending).length) {
+                    fileManager.writeJsonFile(this.pendingFile, updatedPending);
                 }
             }
 
@@ -162,12 +158,11 @@ class Scanner {
         try {
             const packageJsonPath = path.join(dirPath, 'extension', 'package.json');
             
-            if (!fs.existsSync(packageJsonPath)) {
+            const packageJson = fileManager.readJsonFile(packageJsonPath);
+            if (!packageJson) {
                 return null;
             }
 
-            const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-            
             // Check for uninstall.json
             const uninstallJsonPath = path.join(dirPath, 'extension', 'uninstall.json');
             const hasUninstallConfig = fs.existsSync(uninstallJsonPath);

@@ -31,6 +31,22 @@ class Controller {
     }
 
     /**
+     * Move .vsix file between extensions and disabled directories
+     * @param {string} dirName - Directory name (without .vsix extension)
+     * @param {string} fromDir - Source directory (this.extensionsDir or this.disabledDir)
+     * @param {string} toDir - Target directory (this.extensionsDir or this.disabledDir)
+     */
+    moveVsixFile(dirName, fromDir, toDir) {
+        const vsixFileName = dirName + '.vsix';
+        const sourcePath = path.join(fromDir, vsixFileName);
+        
+        if (fs.existsSync(sourcePath)) {
+            const targetPath = path.join(toDir, vsixFileName);
+            fs.renameSync(sourcePath, targetPath);
+        }
+    }
+
+    /**
      * Add extension to pending.json (waiting for IDE restart/deploy)
      * @param {Object} extensionInfo - Extension metadata from package.json
      * @param {string} vsixPath - Path to .vsix file
@@ -43,15 +59,7 @@ class Controller {
             }
 
             // Load existing pending.json
-            let pending = {};
-            if (fs.existsSync(this.pendingFile)) {
-                try {
-                    pending = JSON.parse(fs.readFileSync(this.pendingFile, 'utf8'));
-                } catch (error) {
-                    // Invalid JSON, start fresh
-                    pending = {};
-                }
-            }
+            let pending = fileManager.readJsonFile(this.pendingFile) || {};
 
             // Add/update this extension
             pending[extensionInfo.name] = {
@@ -65,7 +73,7 @@ class Controller {
             };
 
             // Write back
-            fs.writeFileSync(this.pendingFile, JSON.stringify(pending, null, 2), 'utf8');
+            fileManager.writeJsonFile(this.pendingFile, pending);
         } catch (error) {
             // Silent fail - pending list is not critical
         }
@@ -77,14 +85,14 @@ class Controller {
      */
     removePendingExtension(extensionName) {
         try {
-            if (!fs.existsSync(this.pendingFile)) {
+            const pending = fileManager.readJsonFile(this.pendingFile);
+            if (!pending) {
                 return;
             }
 
-            const pending = JSON.parse(fs.readFileSync(this.pendingFile, 'utf8'));
             delete pending[extensionName];
 
-            fs.writeFileSync(this.pendingFile, JSON.stringify(pending, null, 2), 'utf8');
+            fileManager.writeJsonFile(this.pendingFile, pending);
         } catch (error) {
             // Silent fail
         }
@@ -122,13 +130,7 @@ class Controller {
 
             // Move .vsix file back to extensions
             const dirName = path.basename(deployedPath);
-            const vsixFileName = dirName + '.vsix';
-            const disabledVsixPath = path.join(this.disabledDir, vsixFileName);
-            
-            if (fs.existsSync(disabledVsixPath)) {
-                const vsixPath = path.join(this.extensionsDir, vsixFileName);
-                fs.renameSync(disabledVsixPath, vsixPath);
-            }
+            this.moveVsixFile(dirName, this.disabledDir, this.extensionsDir);
 
             return { success: true, message: 'status.enabled' };
 
@@ -172,13 +174,7 @@ class Controller {
 
             // Move .vsix file to disabled directory
             const dirName = path.basename(deployedPath);
-            const vsixFileName = dirName + '.vsix';
-            const vsixPath = path.join(this.extensionsDir, vsixFileName);
-            
-            if (fs.existsSync(vsixPath)) {
-                const disabledVsixPath = path.join(this.disabledDir, vsixFileName);
-                fs.renameSync(vsixPath, disabledVsixPath);
-            }
+            this.moveVsixFile(dirName, this.extensionsDir, this.disabledDir);
 
             return { success: true, message: 'status.disabled' };
 
@@ -248,15 +244,8 @@ class Controller {
      * @returns {Object|null} Uninstall config or null if not found
      */
     loadUninstallConfig(deployedPath) {
-        try {
-            const configPath = path.join(deployedPath, 'extension', 'uninstall.json');
-            if (!fs.existsSync(configPath)) {
-                return null;
-            }
-            return JSON.parse(fs.readFileSync(configPath, 'utf8'));
-        } catch (error) {
-            return null;
-        }
+        const configPath = path.join(deployedPath, 'extension', 'uninstall.json');
+        return fileManager.readJsonFile(configPath);
     }
 
     /**
@@ -281,14 +270,13 @@ class Controller {
             const arduinoIdeDir = this.extensionsDir.replace('/extensions', '');
             const globalStateFile = path.join(arduinoIdeDir, 'plugin-storage', 'global-state.json');
             
-            if (fs.existsSync(globalStateFile)) {
-                const data = JSON.parse(fs.readFileSync(globalStateFile, 'utf8'));
-                
+            const data = fileManager.readJsonFile(globalStateFile);
+            if (data) {
                 for (const key of stateKeys) {
                     delete data[key];
                 }
                 
-                fs.writeFileSync(globalStateFile, JSON.stringify(data), 'utf8');
+                fileManager.writeJsonFile(globalStateFile, data, false); // No pretty print for global-state
             }
         } catch (error) {
             // Silent fail

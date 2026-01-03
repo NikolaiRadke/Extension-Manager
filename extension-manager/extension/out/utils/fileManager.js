@@ -74,6 +74,17 @@ function moveDirectory(source, destination) {
 }
 
 /**
+ * Ensure directory exists, create if not
+ * @param {string} dirPath - Directory path
+ * @param {number} mode - Optional file mode (default: 0o755)
+ */
+function ensureDirectory(dirPath, mode = 0o755) {
+    if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true, mode: mode });
+    }
+}
+
+/**
  * Get file size in human-readable format
  * @param {string} filePath - Path to file
  * @returns {string} Formatted size (e.g., "1.5 MB")
@@ -128,10 +139,47 @@ function getDirectorySize(dirPath) {
     }
 }
 
+/**
+ * Read JSON file with error handling
+ * @param {string} filePath - Path to JSON file
+ * @returns {Object|null} Parsed JSON or null on error
+ */
+function readJsonFile(filePath) {
+    try {
+        if (!fs.existsSync(filePath)) {
+            return null;
+        }
+        const content = fs.readFileSync(filePath, 'utf8');
+        return JSON.parse(content);
+    } catch (error) {
+        return null;
+    }
+}
+
+/**
+ * Write JSON file with error handling
+ * @param {string} filePath - Path to JSON file
+ * @param {Object} data - Data to write
+ * @param {boolean} pretty - Pretty print (default: true)
+ * @returns {boolean} True if successful
+ */
+function writeJsonFile(filePath, data, pretty = true) {
+    try {
+        const content = pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data);
+        fs.writeFileSync(filePath, content, 'utf8');
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
 module.exports = {
     deleteDirectory,
     copyDirectory,
     moveDirectory,
+    ensureDirectory,
     getFileSize,
-    getDirectorySize
+    getDirectorySize,
+    readJsonFile,
+    writeJsonFile
 };
