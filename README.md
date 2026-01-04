@@ -15,7 +15,7 @@ Manage installed extensions in Arduino IDE 2.x - enable, disable, install, and u
 - 🎯 **Clean interface** - integrated into Explorer sidebar, no cluttered Activity Bar
   
 ## Screenshot
-![Extension Manager](http://www.nikolairadke.de/aiduino/extensionmanager_screenshot_1.png)
+![Extension Manager](http://www.nikolairadke.de/aiduino/extensionmanager_screenshot_2.png)
 
 ## Installation
 
