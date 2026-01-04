@@ -11,7 +11,7 @@ Manage installed extensions in Arduino IDE 2.x - enable, disable, install, and u
 - 📥 **Install extensions** from .vsix files with automatic upgrade detection
 - 🔒 **Security scanning** - analyzes extensions before installation for suspicious code patterns
 - ℹ️ **Extension details** - view version, publisher, size, and location in a dedicated panel
-- 🌍 **Automatic language detection** (English/German) based on IDE settings
+- 🌍 **Automatic language detection** based on IDE settings. Support are: **en, es, de fr, it**. 
 - 🎯 **Clean interface** - integrated into Explorer sidebar, no cluttered Activity Bar
   
 ## Screenshot
