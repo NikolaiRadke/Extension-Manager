@@ -26,14 +26,14 @@ Run ``` install_arduinoplus_windows.bat ``` as administrator
 
 #### Linux
 ```
-chmod +x install_arduinoplus_linux.sh
-./install_arduinoplus_install_linux.sh
+chmod +x install_extensionmanager_linux.sh
+./install_extensionmanager_install_linux.sh
 ```
 
 #### macOS
 ```
-chmod +x install_arduinoplus_macos.sh
-./install_arduinoplus_install_macos.sh
+chmod +x install_extensionmanager_macos.sh
+./install_extensionmanager_install_macos.sh
 ```
 
 ## Usage
