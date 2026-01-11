@@ -33,7 +33,7 @@ chmod +x install_arduinoplus_linux.sh
 #### macOS
 ```
 chmod +x install_arduinoplus_macos.sh
-./install_arduinoplus_Install_macos.sh
+./install_arduinoplus_install_macos.sh
 ```
 
 ## Usage
