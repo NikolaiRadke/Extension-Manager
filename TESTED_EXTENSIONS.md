@@ -5,6 +5,8 @@ The following Extensions are tested for installing and removing with Extensioon 
 * [Extension Manager](TESTED_EXTENSIONS.md#extension-manager--)  
 * [AI.duino](TESTED_EXTENSIONS.md#aiduino)  
 * [Arduino+](TESTED_EXTENSIONS.md#arduino)  
+
+And for testing reasons:
   
 ### Extension Manager ;-)
   
@@ -31,7 +33,8 @@ Description: AI-powered assistance for Arduino with Claude, ChatGPT, and other A
 Size: 580.7 KB  
   
 * 🔒 Required Permissions  
-Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low  : ⚡ MEDIUM
+Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low
+  ⚡ MEDIUM
   * Network access to external servers
   * File deletion operations
      - ~/aiduino
@@ -50,7 +53,43 @@ Description: Essential IDE helpers for Arduino development
 Size: 11.7 KB  
   
 * 🔒 Required Permissions  
-  Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low : ⚡ MEDIUM
+  Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low
+  ⚡ MEDIUM  
    * File deletion operations
      - ~/arduinoIDE
      - ~/arduinoplus
+
+
+## Test Extesions
+
+This extensions exist for testing reasons.  
+
+### Evil Extension  
+
+* ℹ️  Extension Information
+Name: evil-extension  
+Version: 6.6.6  
+Publisher: EvilCorp  
+Description: Test extension with intentional security issues  
+Size: 1.8 KB  
+  
+* 🔒 Required Permissions  
+Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low  
+ 🚨 CRITICAL
+   • Dynamic code execution (eval)
+   • Dynamic function creation
+
+⚠️  HIGH
+   • Access to sensitive directories
+   • Obfuscated code
+
+⚡ MEDIUM
+   • Network access to external servers
+   • File deletion operations
+     - ~/aiduino
+     - ~/arduinoplus
+     - ~/backup
+     - ~/cache
+     - ~/gnupg
+   • Suspicious dependency (keytar)
+
