@@ -94,7 +94,8 @@ Use the **About** panel (ℹ️ button in toolbar) and click the "Uninstall" but
 See this [list](TESTED_0EXTENSIONS.md).  
   
 ## Related Projects
-  
+
+- **[AI.duino](https://github.com/NikolaiRadke/AI.duino)** - AI-powered assistance for Arduino IDE.
 - **[Arduino+](https://github.com/NikolaiRadke/Arduinoplus)** - Essential IDE helpers for Arduino development.
 
 ## Contributing
