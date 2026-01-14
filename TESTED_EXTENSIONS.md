@@ -5,11 +5,11 @@ The following Extensions are tested for installing and removing with Extensioon 
 ### AI.duino
   
 * ℹ️ Extension Information
-Name: aiduino
-Version: 2.6.0
-Publisher: MonsterMaker
-Description: AI-powered assistance for Arduino with Claude, ChatGPT, and other AIs: improve code, explain errors, debug help
-Size: 580.7 KB
+Name: aiduino  
+Version: 2.5.0-Make  
+Publisher: MonsterMaker  
+Description: AI-powered assistance for Arduino with Claude, ChatGPT, and other AIs: improve code, explain errors, debug help  
+Size: 580.7 KB  
   
 * 🔒 Required Permissions  
 Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low  : ⚡ MEDIUM
@@ -20,3 +20,19 @@ Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low  : ⚡ ME
      - ~/arduinoIDE
      - ~/backup
      - ~/cache
+
+### Arduino+
+
+* ℹ️  Extension Information
+Name: arduinoplus
+Version: 1.0.0  
+Publisher: MonsterMaker  
+Description: Essential IDE helpers for Arduino development  
+Size: 11.7 KB  
+  
+* 🔒 Required Permissions  
+  Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low : ⚡ MEDIUM
+   * File deletion operations
+     - ~/arduinoIDE
+     - ~/arduinoplus
+
