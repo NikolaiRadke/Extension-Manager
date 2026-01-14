@@ -1,9 +1,10 @@
 # Changelog
-## 1.0.0 29.12.2025
+## 1.0.1 14.01.2026
 
 ## Features
-Added Aktivate/Deaktivate Extension
-Added Install/Uninstall Extension
-Added Info Panel
-Added About Panel
-Added Uninstall Extension Manager
+Added check for UNINSTALL.js
+
+## Bugfixes
+Fixed a wrong .vsix file when reinstalling an extension
+
+

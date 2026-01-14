@@ -71,6 +71,12 @@ class InstallDialog {
         }
         lines.push('');
         lines.push('');
+
+        // Uninstall Configuration
+        if (scanResult.hasUninstallConfig) {
+            lines.push(`✅ ${this.t('info.uninstallConfig')}: ${this.t('info.hasUninstallConfig')}`);
+            lines.push('');
+        }
         
         // Security Check Results
         if (!scanResult.safe) {

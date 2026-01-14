@@ -547,7 +547,7 @@ class Controller {
             // Extract extension info to find all old versions
             let extensionInfo;
             try {
-                extensionInfo = await securityCheck.extractExtensionInfo(vsixPath);
+                extensionInfo = await this.securityCheck.extractExtensionInfo(vsixPath);
             } catch (error) {
                 return { success: false, message: 'error.invalidVsix' };
             }

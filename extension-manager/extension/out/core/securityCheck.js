@@ -86,6 +86,13 @@ class SecurityCheck {
             
             const packageIssues = await this.checkPackageJson(tempDir);
             issues.push(...packageIssues);
+
+            // Check for uninstall.json
+            let hasUninstallConfig = false;
+            const uninstallJsonPath = path.join(tempDir, 'extension', 'uninstall.json');
+            if (fs.existsSync(uninstallJsonPath)) {
+                hasUninstallConfig = true;
+            }
             
             // Extract extension name from package.json
             let extensionName = null;
@@ -106,7 +113,8 @@ class SecurityCheck {
                 safe: issues.length === 0,
                 issues: issues,
                 details: issues.map(i => i.message).join('\n'),
-                extensionName: extensionName
+                extensionName: extensionName,
+                hasUninstallConfig: hasUninstallConfig
             };
             
         } catch (error) {
@@ -388,13 +396,6 @@ class SecurityCheck {
         return lines.join('\n');
     }
 
-    /**
-     * Format scan result for user-friendly display
-     * Groups issues by category and extracts paths
-     * @param {Object} scanResult - Result from scanVsix()
-     * @param {string} extensionName - Name of the extension being scanned
-     * @returns {string} User-friendly formatted message
-     */
     /**
      * Format scan result for user-friendly display
      * Groups issues by severity level

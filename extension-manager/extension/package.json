@@ -2,7 +2,7 @@
   "name": "extension-manager",
   "displayName": "Extension Manager",
   "description": "Manage installed extensions in Arduino IDE 2.x",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "MonsterMaker",
   "engines": {
     "vscode": "^1.60.0"
