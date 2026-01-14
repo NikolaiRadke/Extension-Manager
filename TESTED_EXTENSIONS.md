@@ -7,6 +7,8 @@ The following Extensions are tested for installing and removing with Extensioon 
 * [Arduino+](TESTED_EXTENSIONS.md#arduino)  
 
 And for testing reasons:
+
+* [Evil Extension](TESTED_EXTENSIONS.md#evil-extension)
   
 ### Extension Manager ;-)
   
@@ -18,10 +20,12 @@ Description: Manage installed extensions in Arduino IDE 2.x
 Size: 36.0 KB  
   
 * 🔒 Required Permissions  
-Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low : ⚡ MEDIUM
-   * File deletion operations
-     - ~/arduinoIDE
-     - ~/extensionmanager
+Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low  
+
+  - ⚡ MEDIUM
+    - File deletion operations
+      - ~/arduinoIDE
+      - ~/extensionmanager
   
 ### AI.duino
   
@@ -33,15 +37,16 @@ Description: AI-powered assistance for Arduino with Claude, ChatGPT, and other A
 Size: 580.7 KB  
   
 * 🔒 Required Permissions  
-Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low
-  ⚡ MEDIUM
-  * Network access to external servers
-  * File deletion operations
-     - ~/aiduino
-     - ~/arduino15
-     - ~/arduinoIDE
-     - ~/backup
-     - ~/cache
+Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low  
+  
+  - ⚡ MEDIUM  
+    - Network access to external servers  
+    - File deletion operations  
+      - ~/aiduino  
+      - ~/arduino15  
+      - ~/arduinoIDE  
+      - ~/backup  
+      - ~/cache  
 
 ### Arduino+
 
@@ -53,12 +58,12 @@ Description: Essential IDE helpers for Arduino development
 Size: 11.7 KB  
   
 * 🔒 Required Permissions  
-  Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low
-  ⚡ MEDIUM  
-   * File deletion operations
-     - ~/arduinoIDE
-     - ~/arduinoplus
+Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low
 
+  - ⚡ MEDIUM  
+    - File deletion operations  
+      - ~/arduinoIDE  
+      - ~/arduinoplus  
 
 ## Test Extesions
 
@@ -75,21 +80,21 @@ Size: 1.8 KB
   
 * 🔒 Required Permissions  
 Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low  
- 🚨 CRITICAL
-   • Dynamic code execution (eval)
-   • Dynamic function creation
+  - 🚨 CRITICAL
+    - Dynamic code execution (eval)  
+    - Dynamic function creation  
 
-⚠️  HIGH
-   • Access to sensitive directories
-   • Obfuscated code
-
-⚡ MEDIUM
-   • Network access to external servers
-   • File deletion operations
-     - ~/aiduino
-     - ~/arduinoplus
-     - ~/backup
-     - ~/cache
-     - ~/gnupg
-   • Suspicious dependency (keytar)
+  - ⚠️ HIGH
+    - Access to sensitive directories  
+    - Obfuscated code
+        
+  - ⚡ MEDIUM  
+    - Network access to external servers  
+    - File deletion operations  
+      - ~/aiduino  
+      - ~/arduinoplus  
+      - ~/backup  
+      - ~/cache  
+      - ~/gnupg  
+    - Suspicious dependency (keytar)  
 
