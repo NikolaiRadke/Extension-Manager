@@ -89,6 +89,10 @@ Use the **About** panel (ℹ️ button in toolbar) and click the "Uninstall" but
 - Clean up all related files
 - Restart the IDE to complete uninstallation
 
+## Tested Extemsions
+
+See this [list](TESTED_0EXTENSIONS.md).  
+  
 ## Related Projects
   
 - **[Arduino+](https://github.com/NikolaiRadke/Arduinoplus)** - Essential IDE helpers for Arduino development.
