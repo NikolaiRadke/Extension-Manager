@@ -91,7 +91,7 @@ Use the **About** panel (ℹ️ button in toolbar) and click the "Uninstall" but
 
 ## Tested Extemsions
 
-See this [list](TESTED_0EXTENSIONS.md).  
+See this [list](TESTED_EXTENSIONS.md).  
   
 ## Related Projects
 
