@@ -2,6 +2,10 @@
 
 The following Extensions are tested for installing and removing with Extensioon Manager:
 
+* [Extension Manager](TESTED_EXTENSIONS.md#extension-manager--)  
+* [AI.duino](#aiduino)
+* (Arduino+)[
+  
 ### Extension Manager ;-)
   
 * ℹ️ Extension Information
