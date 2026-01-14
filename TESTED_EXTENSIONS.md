@@ -2,6 +2,21 @@
 
 The following Extensions are tested for installing and removing with Extensioon Manager:
 
+### Extension Manager ;-)
+  
+* ℹ️ Extension Information
+Name: extension-manager
+Version: 1.0.0
+Publisher: MonsterMaker
+Description: Manage installed extensions in Arduino IDE 2.x  
+Size: 36.0 KB  
+  
+* 🔒 Required Permissions  
+Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low : ⚡ MEDIUM
+   * File deletion operations
+     - ~/arduinoIDE
+     - ~/extensionmanager
+  
 ### AI.duino
   
 * ℹ️ Extension Information
@@ -35,4 +50,3 @@ Size: 11.7 KB
    * File deletion operations
      - ~/arduinoIDE
      - ~/arduinoplus
-
