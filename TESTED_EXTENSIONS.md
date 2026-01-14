@@ -66,7 +66,7 @@ Size: 11.7 KB
 * 🔒 Required Permissions  
 Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low
 
-  - ⚡ MEDIUM  
+  - ⚡ MEDIUM
     - File deletion operations  
       - ~/arduinoIDE  
       - ~/arduinoplus  
@@ -85,7 +85,8 @@ Description: Test extension with intentional security issues
 Size: 1.8 KB  
   
 * 🔒 Required Permissions  
-Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low  
+Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low
+  
   - 🚨 CRITICAL
     - Dynamic code execution (eval)  
     - Dynamic function creation  
