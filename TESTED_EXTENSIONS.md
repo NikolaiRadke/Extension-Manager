@@ -3,8 +3,8 @@
 The following Extensions are tested for installing and removing with Extensioon Manager:
 
 * [Extension Manager](TESTED_EXTENSIONS.md#extension-manager--)  
-* [AI.duino](#aiduino)
-* (Arduino+)[
+* [AI.duino](TESTED_EXTENSIONS.md#aiduino)  
+* [Arduino+](TESTED_EXTENSIONS.md#arduino)  
   
 ### Extension Manager ;-)
   
