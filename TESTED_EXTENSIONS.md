@@ -17,7 +17,9 @@ Name: extension-manager
 Version: 1.0.0
 Publisher: MonsterMaker
 Description: Manage installed extensions in Arduino IDE 2.x  
-Size: 36.0 KB  
+Size: 36.0 KB
+
+* ✅ Uninstaller: Available (complete uninstall)
   
 * 🔒 Required Permissions  
 Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low  
@@ -35,6 +37,8 @@ Version: 2.5.0-Make
 Publisher: MonsterMaker  
 Description: AI-powered assistance for Arduino with Claude, ChatGPT, and other AIs: improve code, explain errors, debug help  
 Size: 580.7 KB  
+
+* ✅ Uninstaller: Available (complete uninstall)
   
 * 🔒 Required Permissions  
 Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low  
@@ -55,7 +59,9 @@ Name: arduinoplus
 Version: 1.0.0  
 Publisher: MonsterMaker  
 Description: Essential IDE helpers for Arduino development  
-Size: 11.7 KB  
+Size: 11.7 KB
+
+* ✅ Uninstaller: Available (complete uninstall)
   
 * 🔒 Required Permissions  
 Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low
