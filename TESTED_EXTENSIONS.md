@@ -10,14 +10,11 @@ Version: 2.6.0
 Publisher: MonsterMaker
 Description: AI-powered assistance for Arduino with Claude, ChatGPT, and other AIs: improve code, explain errors, debug help
 Size: 580.7 KB
-
-
-* 🔒 Required Permissions
-Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low
-
-*⚡ MEDIUM
-   • Network access to external servers
-   • File deletion operations
+  
+* 🔒 Required Permissions  
+Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low  : ⚡ MEDIUM
+  * Network access to external servers
+  * File deletion operations
      - ~/aiduino
      - ~/arduino15
      - ~/arduinoIDE
