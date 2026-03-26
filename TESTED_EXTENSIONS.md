@@ -33,7 +33,7 @@ Security levels: 🚨 Critical | ⚠️ High | ⚡ Medium | ℹ️ Low
   
 * ℹ️ Extension Information
 Name: aiduino  
-Version: 2.5.0-Make  
+Version: >= 2.5.0-Make  
 Publisher: MonsterMaker  
 Description: AI-powered assistance for Arduino with Claude, ChatGPT, and other AIs: improve code, explain errors, debug help  
 Size: 580.7 KB  
