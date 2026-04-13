@@ -27,13 +27,13 @@ Run ``` install_arduinoplus_windows.bat ``` as administrator
 #### Linux
 ```
 chmod +x install_extensionmanager_linux.sh
-./install_extensionmanager_install_linux.sh
+./install_extensionmanager_linux.sh
 ```
 
 #### macOS
 ```
 chmod +x install_extensionmanager_macos.sh
-./install_extensionmanager_install_macos.sh
+./install_extensionmanager_macos.sh
 ```
 
 ## Usage
