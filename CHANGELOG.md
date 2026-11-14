@@ -1,5 +1,5 @@
 # Changelog
-## Unreleased
+## 1.1.0 14.11.2026
 
 ## Features
 uninstall.json: {tmp} placeholder for the temp folder, * in the last part of a path, second confirmation with the list of files and folders (`"confirm": {"double": true}`)
