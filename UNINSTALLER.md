@@ -6,11 +6,10 @@ Extension Manager supports declarative uninstall configurations through an `unin
 
 When Extension Manager uninstalls an extension, it checks for an `uninstall.json` file in the extension's deployed directory. If found, Extension Manager will:
 
-1. Delete all specified directories
-2. Delete all specified files
-3. Remove global state entries
-4. Clear VS Code configuration settings
-5. Perform standard cleanup (remove .vsix, deployed directory, etc.)
+1. Delete all specified directories and files (only safe paths, see [Safety](#safety))
+2. Remove global state entries
+3. Clear VS Code configuration settings
+4. Perform standard cleanup (remove .vsix, deployed directory, etc.)
 
 Extensions with `uninstall.json` are marked with "Uninstaller: ✓ Available" in the Extension Manager interface.
 
@@ -71,7 +70,8 @@ your-extension/
 ### `directories` (optional)
 - **Type:** Array of strings
 - **Description:** Directories to delete recursively
-- **Placeholders:** Supports `~`, `{home}`, `{arduinoIDE}`
+- **Placeholders:** Supports `~`, `{home}`, `{arduinoIDE}`, `{tmp}`
+- **Wildcards:** `*` in the last part of the path (see [Wildcards](#wildcards))
 - **Example:**
   ```json
   "directories": [
@@ -83,7 +83,8 @@ your-extension/
 ### `files` (optional)
 - **Type:** Array of strings
 - **Description:** Files or directories to delete
-- **Placeholders:** Supports `~`, `{home}`, `{arduinoIDE}`
+- **Placeholders:** Supports `~`, `{home}`, `{arduinoIDE}`, `{tmp}`
+- **Wildcards:** `*` in the last part of the path (see [Wildcards](#wildcards))
 - **Note:** Can be both files and directories
 - **Example:**
   ```json
@@ -108,7 +109,7 @@ your-extension/
 - **Type:** Array of strings
 - **Description:** VS Code configuration keys to remove
 - **Scope:** Removes from both Global and Workspace settings
-- **Format:** `prefix.settingName`
+- **Format:** `prefix.settingName`; each key may have its own prefix
 - **Example:**
   ```json
   "settings": [
@@ -122,8 +123,8 @@ your-extension/
 - **Type:** Object
 - **Description:** Confirmation dialog settings
 - **Fields:**
-  - `enabled` (boolean): Show confirmation dialog (default: `true`)
-  - `double` (boolean): Require double confirmation (default: `false`)
+  - `enabled` (boolean): Ignored. The Extension Manager always asks once before uninstalling.
+  - `double` (boolean): Ask a second time and list the files and folders that will be deleted (default: `false`)
 - **Example:**
   ```json
   "confirm": {
@@ -140,15 +141,32 @@ The following placeholders are automatically resolved:
 |------------|-------------|---------|
 | `~` | Home directory | `/home/user` |
 | `{home}` | Home directory | `/home/user` |
-| `{arduinoIDE}` | Arduino IDE config directory | Platform-specific (see below) |
+| `{arduinoIDE}` | Arduino IDE folder | `/home/user/.arduinoIDE` |
+| `{tmp}` | Temp folder of the system | `/tmp`, `C:\Users\user\AppData\Local\Temp` |
 
-### Arduino IDE Directory (Platform-Specific)
+Arduino IDE 2.x uses `.arduinoIDE` in the home folder on all platforms (Linux, macOS and Windows). Use forward slashes, they work on Windows too.
 
-| Platform | Path |
-|----------|------|
-| **Linux** | `~/.arduinoIDE` |
-| **macOS** | `~/Library/Application Support/Arduino IDE` |
-| **Windows** | `%APPDATA%\Arduino IDE` |
+## Wildcards
+
+A `*` in the **last part** of a path matches any characters, e.g. for versioned files:
+
+```json
+"files": [
+  "{arduinoIDE}/extensions/myext-*.vsix"
+]
+```
+
+Wildcards in folder names (`~/*/myext`) are not supported and are refused.
+
+## Safety
+
+`uninstall.json` comes with a third-party extension, so the Extension Manager only deletes paths that are
+
+- **inside** the home folder or the temp folder,
+- **not** the home folder, the temp folder or the folders the IDE and the Extension Manager need themselves (`.arduinoIDE`, `extensions`, `deployedPlugins`, `plugin-storage`, `~/.extensionmanager`),
+- written **without** `..`.
+
+Refused paths are skipped and reported as failed. Your sketches can still be deleted if an extension lists them, so the second confirmation (`"double": true`) shows everything that will be deleted.
 
 ## Complete Example
 
@@ -276,6 +294,7 @@ Extension Manager handles errors gracefully:
 
 - **File not found:** Silently skips (already deleted or never created)
 - **Permission denied:** Reports error but continues with other items
+- **Unsafe path:** Skipped and reported as error (see [Safety](#safety))
 - **Invalid JSON:** Falls back to standard uninstall (no extended cleanup)
 
 ## Support

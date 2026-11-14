@@ -14,6 +14,8 @@ const os = require('os');
 const SecurityCheck = require('./securityCheck');
 const fileManager = require('../utils/fileManager');
 
+const IS_WINDOWS = process.platform === 'win32';
+
 /**
  * Controller - Manages extension operations (enable, disable, uninstall, install)
  */
@@ -21,8 +23,9 @@ class Controller {
     constructor(scanner) {
         this.scanner = scanner;
         this.homeDir = os.homedir();
-        this.extensionsDir = path.join(this.homeDir, '.arduinoIDE', 'extensions');
-        this.deployedDir = path.join(this.homeDir, '.arduinoIDE', 'deployedPlugins');
+        this.arduinoIdeDir = path.join(this.homeDir, '.arduinoIDE');
+        this.extensionsDir = path.join(this.arduinoIdeDir, 'extensions');
+        this.deployedDir = path.join(this.arduinoIdeDir, 'deployedPlugins');
         this.disabledDir = path.join(this.homeDir, '.extensionmanager', 'disabled');
         this.managerDir = path.join(this.homeDir, '.extensionmanager');
         this.pendingFile = path.join(this.managerDir, 'pending.json');
@@ -250,15 +253,91 @@ class Controller {
 
     /**
      * Resolve path placeholders in uninstall.json
-     * @param {string} pathStr - Path with placeholders
+     * @param {string} pathStr - Path with placeholders (~, {home}, {arduinoIDE}, {tmp})
      * @returns {string} Resolved path
      */
     resolvePath(pathStr) {
-        const homeDir = os.homedir();
-        return pathStr
-            .replace(/^~/, homeDir)
-            .replace(/\{arduinoIDE\}/g, this.extensionsDir.replace('/extensions', ''))
-            .replace(/\{home\}/g, homeDir);
+        return path.normalize(pathStr
+            .replace(/^~(?=$|[\\/])/, this.homeDir)
+            .replace(/\{home\}/g, this.homeDir)
+            .replace(/\{arduinoIDE\}/g, this.arduinoIdeDir)
+            .replace(/\{tmp\}/g, os.tmpdir()));
+    }
+
+    /**
+     * Check whether a path lies strictly inside a folder
+     * @param {string} parent - Folder
+     * @param {string} child - Path
+     * @returns {boolean} True if child is below parent
+     */
+    isInside(parent, child) {
+        const normalize = p => (IS_WINDOWS ? p.toLowerCase() : p);
+        const relative = path.relative(normalize(parent), normalize(child));
+        return relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative);
+    }
+
+    /**
+     * uninstall.json comes from a third-party extension: it may only delete
+     * below the home or temp folder, never these folders themselves or the
+     * folders the IDE and the Extension Manager need
+     * @param {string} target - Resolved path
+     * @returns {boolean} True if the path may be deleted
+     */
+    isSafeTarget(target) {
+        const normalize = p => (IS_WINDOWS ? p.toLowerCase() : p);
+        const protectedDirs = [
+            this.arduinoIdeDir, this.extensionsDir, this.deployedDir,
+            path.join(this.arduinoIdeDir, 'plugin-storage'), this.managerDir, this.disabledDir
+        ].map(dir => normalize(path.normalize(dir)));
+        if (protectedDirs.includes(normalize(target))) return false;
+        if (this.isInside(this.managerDir, target)) return false;
+        return this.isInside(this.homeDir, target) || this.isInside(os.tmpdir(), target);
+    }
+
+    /**
+     * Turn one entry of uninstall.json into existing paths. A * in the last
+     * part matches any characters (extension-1.2.3.vsix), not in folder names.
+     * @param {string} entry - Entry with placeholders
+     * @returns {{targets: string[], refused: string[]}} Paths to delete and refused paths
+     */
+    expandEntry(entry) {
+        if (typeof entry !== 'string' || entry.split(/[\\/]/).includes('..')) {
+            return { targets: [], refused: [String(entry)] };
+        }
+        const resolved = this.resolvePath(entry);
+        const dir = path.dirname(resolved);
+        const name = path.basename(resolved);
+        // Wildcards only in the last part
+        if (dir.includes('*')) return { targets: [], refused: [resolved] };
+        let found = [];
+        if (name.includes('*')) {
+            const escaped = name.split('*').map(part => part.replace(/[.+?^${}()|[\]\\]/g, '\\$&'));
+            const pattern = new RegExp(`^${escaped.join('.*')}$`, IS_WINDOWS ? 'i' : '');
+            found = fs.existsSync(dir) ? fs.readdirSync(dir).filter(file => pattern.test(file)).map(file => path.join(dir, file)) : [];
+        } else if (fs.existsSync(resolved)) {
+            found = [resolved];
+        }
+        return {
+            targets: found.filter(target => this.isSafeTarget(target)),
+            refused: found.filter(target => !this.isSafeTarget(target))
+        };
+    }
+
+    /**
+     * All existing paths an uninstall.json would delete
+     * @param {Object} config - Uninstall configuration
+     * @returns {{targets: string[], refused: string[]}} Paths to delete and refused paths
+     */
+    collectTargets(config) {
+        const entries = [...(config.directories || []), ...(config.files || [])];
+        const targets = new Set();
+        const refused = new Set();
+        for (const entry of entries) {
+            const result = this.expandEntry(entry);
+            result.targets.forEach(target => targets.add(target));
+            result.refused.forEach(target => refused.add(target));
+        }
+        return { targets: [...targets], refused: [...refused] };
     }
 
     /**
@@ -267,8 +346,7 @@ class Controller {
      */
     async clearGlobalState(stateKeys) {
         try {
-            const arduinoIdeDir = this.extensionsDir.replace('/extensions', '');
-            const globalStateFile = path.join(arduinoIdeDir, 'plugin-storage', 'global-state.json');
+            const globalStateFile = path.join(this.arduinoIdeDir, 'plugin-storage', 'global-state.json');
             
             const data = fileManager.readJsonFile(globalStateFile);
             if (data) {
@@ -288,25 +366,18 @@ class Controller {
      * @param {Array} settingKeys - Setting keys to remove
      */
     async clearVSCodeSettings(settingKeys) {
-        try {
-            // Extract prefix from first key
-            const prefix = settingKeys[0]?.split('.')[0];
-            if (!prefix) return;
-            
+        for (const fullKey of settingKeys) {
+            // Each key has its own prefix (myext.apiKey, myext.advanced.option)
+            const [prefix, ...rest] = String(fullKey).split('.');
+            if (!prefix || rest.length === 0) continue;
             const config = vscode.workspace.getConfiguration(prefix);
-            
-            for (const fullKey of settingKeys) {
-                const key = fullKey.replace(`${prefix}.`, '');
-                
+            for (const target of [vscode.ConfigurationTarget.Global, vscode.ConfigurationTarget.Workspace]) {
                 try {
-                    await config.update(key, undefined, vscode.ConfigurationTarget.Global);
-                    await config.update(key, undefined, vscode.ConfigurationTarget.Workspace);
+                    await config.update(rest.join('.'), undefined, target);
                 } catch (error) {
-                    // Silent fail
+                    // No workspace or unknown key: nothing to clear
                 }
             }
-        } catch (error) {
-            // Silent fail
         }
     }
 
@@ -361,37 +432,19 @@ class Controller {
             failed: []
         };
 
-        // Delete directories
-        if (config.directories) {
-            for (const dir of config.directories) {
-                const resolved = this.resolvePath(dir);
-                if (fs.existsSync(resolved)) {
-                    try {
-                        fileManager.deleteDirectory(resolved);
-                        results.deleted.push(resolved);
-                    } catch (error) {
-                        results.failed.push(resolved);
-                    }
+        // Delete directories and files (only safe paths, see isSafeTarget)
+        const { targets, refused } = this.collectTargets(config);
+        results.failed.push(...refused);
+        for (const target of targets) {
+            try {
+                if (fs.statSync(target).isDirectory()) {
+                    fileManager.deleteDirectory(target);
+                } else {
+                    fs.unlinkSync(target);
                 }
-            }
-        }
-
-        // Delete files
-        if (config.files) {
-            for (const file of config.files) {
-                const resolved = this.resolvePath(file);
-                if (fs.existsSync(resolved)) {
-                    try {
-                        if (fs.statSync(resolved).isDirectory()) {
-                            fileManager.deleteDirectory(resolved);
-                        } else {
-                            fs.unlinkSync(resolved);
-                        }
-                        results.deleted.push(resolved);
-                    } catch (error) {
-                        results.failed.push(resolved);
-                    }
-                }
+                results.deleted.push(target);
+            } catch (error) {
+                results.failed.push(target);
             }
         }
 

@@ -11,6 +11,7 @@
   "confirm.enable": "Enable extension '{0}'? IDE restart required.",
   "confirm.disable": "Disable extension '{0}'? IDE restart required.",
   "confirm.uninstall": "Really uninstall extension '{0}'?",
+  "confirm.uninstallDouble": "'{0}' will also delete these files and folders:\n{1}",
   "error.notFound": "Extension not found",
   "error.alreadyEnabled": "Extension is already enabled",
   "error.alreadyDisabled": "Extension is already disabled",

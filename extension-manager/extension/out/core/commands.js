@@ -9,6 +9,9 @@
 
 const vscode = require('vscode');
 
+// Paths listed in the second uninstall confirmation, the rest is shortened
+const MAX_LISTED_PATHS = 10;
+
 /**
  * Refresh extension list
  * @param {Object} treeProvider - Tree provider instance
@@ -136,6 +139,21 @@ async function uninstallExtension(extensionId, scanner, controller, treeProvider
 
     if (confirm !== t('button.uninstall')) {
         return;
+    }
+
+    // uninstall.json may ask for a second confirmation: show what will be deleted
+    const uninstallConfig = extension.deployedPath ? controller.loadUninstallConfig(extension.deployedPath) : null;
+    if (uninstallConfig?.confirm?.double) {
+        const { targets } = controller.collectTargets(uninstallConfig);
+        const list = targets.slice(0, MAX_LISTED_PATHS).join('\n') + (targets.length > MAX_LISTED_PATHS ? '\n…' : '');
+        const second = await vscode.window.showWarningMessage(
+            t('confirm.uninstallDouble').replace('{0}', extension.name).replace('{1}', list || '-'),
+            { modal: true },
+            t('button.uninstall')
+        );
+        if (second !== t('button.uninstall')) {
+            return;
+        }
     }
 
     vscode.window.withProgress({

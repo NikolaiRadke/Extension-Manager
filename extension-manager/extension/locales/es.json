@@ -11,6 +11,7 @@
   "confirm.enable": "¿Activar la extensión '{0}'? Se requiere reiniciar el IDE.",
   "confirm.disable": "¿Desactivar la extensión '{0}'? Se requiere reiniciar el IDE.",
   "confirm.uninstall": "¿Realmente desinstalar la extensión '{0}'?",
+  "confirm.uninstallDouble": "'{0}' también eliminará estos archivos y carpetas:\n{1}",
   "error.notFound": "Extensión no encontrada",
   "error.alreadyEnabled": "La extensión ya está activada",
   "error.alreadyDisabled": "La extensión ya está desactivada",
