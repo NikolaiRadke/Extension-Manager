@@ -22,6 +22,16 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Extension Manager",
+      "properties": {
+        "extensionManager.checkUpdatesOnStartup": {
+          "type": "boolean",
+          "default": true,
+          "description": "%config.checkUpdatesOnStartup%"
+        }
+      }
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -72,6 +82,15 @@
         "icon": "$(cloud-download)"
       },
       {
+        "command": "extensionManager.checkUpdates",
+        "title": "%command.checkUpdates%",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "extensionManager.update",
+        "title": "%command.update%"
+      },
+      {
         "command": "extensionManager.about",
         "title": "%command.about%",
         "icon": "$(info)"
@@ -79,6 +98,10 @@
     ],
     "menus": {
       "commandPalette": [
+        {
+          "command": "extensionManager.update",
+          "when": "false"
+        },
         {
           "command": "extensionManager.refresh",
           "when": "false"
@@ -109,6 +132,11 @@
         }
       ],
       "view/title": [
+        {
+          "command": "extensionManager.checkUpdates",
+          "when": "view == extensionManager.extensionTree",
+          "group": "navigation"
+        },
         {
           "command": "extensionManager.refresh",
           "when": "view == extensionManager.extensionTree",

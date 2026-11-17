@@ -1,18 +1,19 @@
 ![Extension Manager](http://www.nikolairadke.de/aiduino/extensionmanager_banner.png)
 # Extension Manager
 
-Manage installed extensions in Arduino IDE 2.x - enable, disable, install, and uninstall extensions directly from the IDE.
+Manage installed extensions in Arduino IDE 2.x - enable, disable, install, update, and uninstall extensions directly from the IDE. It looks and works like the extensions view in VS Code.
 
 ## Features
 
-- 📦 **View all installed extensions** with status (enabled/disabled)
+- 🧩 **Own view in the sidebar** - with its own icon in the activity bar, just like in VS Code
+- 📦 **View all installed extensions** with icon, description, and status, grouped and searchable
 - ✅ **Enable/Disable extensions** - moves extensions between active and disabled state
 - 🗑️ **Uninstall extensions** completely (removes .vsix files and all data)
 - 📥 **Install extensions** from .vsix files with automatic upgrade detection
 - 🔒 **Security scanning** - analyzes extensions before installation for suspicious code patterns
-- ℹ️ **Extension details** - view version, publisher, size, and location in a dedicated panel
+- ⬆️ **Updates** - checks GitHub releases for newer versions and updates with one click
+- ℹ️ **Extension details** - detail page with README, changelog, version, size, and location
 - 🌍 **Automatic language detection** based on IDE settings. Support are: **en, es, de, fr, it**. 
-- 🎯 **Clean interface** - integrated into Explorer sidebar
   
 ## Screenshot
 ![Extension Manager](http://www.nikolairadke.de/aiduino/extensionmanager_screenshot_3.png)
@@ -22,7 +23,7 @@ Manage installed extensions in Arduino IDE 2.x - enable, disable, install, and u
 You need the VSIX file **extension-manager-X.X.X.vsix** in the same folder with the installer. The installer will install the plugin in your home folder. 
   
 #### Windows
-Run ``` install_arduinoplus_windows.bat ``` as administrator
+Run ``` install_extensionmanager_windows.bat ``` as administrator
 
 #### Linux
 ```
@@ -38,15 +39,14 @@ chmod +x install_extensionmanager_macos.sh
 
 ## Usage
 
-1. Open the **Explorer** view (Files icon in left sidebar, or Ctrl+Shift+E)
-2. Find **Extension Manager** section below your sketch files
-3. View all installed extensions with their status (✓ enabled / ⊘ disabled)
-4. Click on any extension to:
-   - Enable/Disable (moves .vsix files accordingly)
-   - View detailed information
-   - Uninstall completely
-5. Use the toolbar buttons:
-   - 🔄 **Refresh** extension list
+1. Click the **Extension Manager** icon in the activity bar on the left
+2. All installed extensions are listed in groups: **Updates available**, **Waiting for restart**, **Enabled**, and **Disabled**
+3. Use the search field to filter by name, publisher, or description
+4. Hover over an extension to enable, disable, or uninstall it
+5. Click on an extension to open its detail page with README, changelog, and installation details
+6. Use the toolbar buttons:
+   - 🔄 **Check for updates**
+   - 🔃 **Refresh** extension list
    - 📥 **Install** new extensions from .vsix files
    - ℹ️ **About** Extension Manager
 
@@ -57,6 +57,17 @@ chmod +x install_extensionmanager_macos.sh
 - The extension is installed to `~/.arduinoIDE/extensions/`
 - Restart the IDE to activate newly installed extensions
 
+### Updating Extensions
+- Extension Manager checks for updates a few seconds after the IDE starts. You can turn this off in the settings (`extensionManager.checkUpdatesOnStartup`)
+- Click the 🔄 button in the toolbar to check manually
+- Extensions with an update are shown in **Updates available**, and the icon in the activity bar shows their number
+- **Update** downloads the new .vsix file and runs the same security scan as a normal installation
+- Results are cached for 6 hours, because GitHub allows only 60 requests per hour without login
+
+**For extension developers:** Your extension can be updated if
+1. the `repository` field in its `package.json` points to a GitHub repository, and
+2. the latest release (not a pre-release) has a tag with the version number (e.g. `v1.2.0`) and a `.vsix` file attached.
+
 ### Enabling/Disabling Extensions
 - **Disable**: Moves the extension from `deployedPlugins/` to `.extensionmanager/disabled/`
 - **Enable**: Moves it back to make it active again
@@ -66,7 +77,8 @@ chmod +x install_extensionmanager_macos.sh
 ## Known Limitations
 
 - Changes require an IDE restart to take effect
-- On first run, Extension Manager automatically opens the Explorer view to make itself visible
+- The update check only works for extensions with a GitHub repository and a .vsix file in their releases
+- After updating from version 1.1.0 or older, sketches you opened before may still show the old list in the Explorer. Open a new sketch, or reset the layout with **Ctrl+Shift+P** → *Reset Workbench Layout*
 
 ## Advanced: uninstall.json Support
 
@@ -89,7 +101,7 @@ Use the **About** panel (ℹ️ button in toolbar) and click the "Uninstall" but
 - Clean up all related files
 - Restart the IDE to complete uninstallation
 
-## Tested Extemsions
+## Tested Extensions
 
 See this [list](TESTED_EXTENSIONS.md).  
   

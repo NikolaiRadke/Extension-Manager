@@ -102,5 +102,19 @@
   "security.desc.fileDelete": "File deletion operations",
   "security.desc.obfuscatedCode": "Obfuscated code",
   "security.desc.suspiciousDependency": "Suspicious dependency",
-  "security.desc.largeFile": "Unusually large extension"
+  "security.desc.largeFile": "Unusually large extension",
+  "update.section": "Updates available",
+  "update.button": "Update",
+  "update.buttonTo": "Update to v{0}",
+  "update.badge": "{0} update(s) available",
+  "update.badgeNew": "available",
+  "update.checking": "Checking for updates …",
+  "update.availableOne": "An extension update is available.",
+  "update.availableMany": "{0} extension updates are available.",
+  "update.show": "Show",
+  "update.none": "All extensions are up to date.",
+  "update.rateLimit": "GitHub request limit reached. Please try again later.",
+  "update.downloading": "Downloading {0} …",
+  "update.downloadFailed": "Download failed: {0}",
+  "detail.release": "Release v{0}"
 }

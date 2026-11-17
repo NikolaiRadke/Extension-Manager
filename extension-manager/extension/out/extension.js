@@ -12,6 +12,7 @@ const vscode = require('vscode');
 // Core modules
 const Scanner = require('./core/scanner');
 const Controller = require('./core/controller');
+const UpdateChecker = require('./core/updateChecker');
 const commands = require('./core/commands');
 
 // UI modules
@@ -22,9 +23,13 @@ const AboutPanel = require('./ui/aboutPanel');
 // Utils
 const { loadTranslations, t } = require('./utils/localeLoader');
 
+// Delay of the automatic update check after start (ms)
+const STARTUP_CHECK_DELAY = 5000;
+
 // Global instances
 let scanner;
 let controller;
+let updateChecker;
 let sidebarView;
 let infoPanel;
 let aboutPanel;
@@ -40,12 +45,14 @@ async function activate(context) {
     // Initialize core modules
     scanner = new Scanner();
     controller = new Controller(scanner);
+    updateChecker = new UpdateChecker(context, scanner, controller);
 
     // Initialize UI modules
-    sidebarView = new SidebarView(scanner, t, handleSidebarAction);
-    infoPanel = new InfoPanel(scanner, controller, sidebarView, t);
+    sidebarView = new SidebarView(scanner, updateChecker, t, handleSidebarAction);
+    infoPanel = new InfoPanel(scanner, controller, updateChecker, sidebarView, t);
     aboutPanel = new AboutPanel(sidebarView, t);
     sidebarView.onDidRefresh(() => infoPanel.update());
+    updateChecker.onDidChange(() => sidebarView.refresh());
 
     // Register sidebar view
     context.subscriptions.push(
@@ -54,9 +61,13 @@ async function activate(context) {
         })
     );
 
-
     // Register commands
     registerCommands(context);
+
+    // Look for updates a few seconds after start, not to slow down the IDE
+    if (vscode.workspace.getConfiguration('extensionManager').get('checkUpdatesOnStartup', true)) {
+        setTimeout(() => commands.checkForUpdates(updateChecker, t, false), STARTUP_CHECK_DELAY);
+    }
 }
 
 /**
@@ -114,6 +125,21 @@ function registerCommands(context) {
         })
     );
 
+    // Update commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extensionManager.checkUpdates', async () => {
+            await commands.checkForUpdates(updateChecker, t, true);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('extensionManager.update', async (extensionId) => {
+            if (extensionId) {
+                await commands.updateExtension(extensionId, updateChecker, controller, sidebarView, t);
+            }
+        })
+    );
+
     // About command
     context.subscriptions.push(
         vscode.commands.registerCommand('extensionManager.about', async () => {
@@ -132,7 +158,8 @@ async function handleSidebarAction(action, extensionId) {
         open: 'extensionManager.showInfo',
         enable: 'extensionManager.enable',
         disable: 'extensionManager.disable',
-        uninstall: 'extensionManager.uninstall'
+        uninstall: 'extensionManager.uninstall',
+        update: 'extensionManager.update'
     };
     if (commandIds[action]) {
         await vscode.commands.executeCommand(commandIds[action], extensionId);

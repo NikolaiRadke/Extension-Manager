@@ -12,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const MarkdownRenderer = require('../utils/markdown');
+const { normalizeRepository } = require('../utils/repository');
 
 const SELF_ID = 'MonsterMaker.extension-manager';
 
@@ -19,9 +20,10 @@ const SELF_ID = 'MonsterMaker.extension-manager';
  * InfoPanel - VS Code style detail page of one extension in an editor tab
  */
 class InfoPanel {
-    constructor(scanner, controller, treeProvider, t) {
+    constructor(scanner, controller, updateChecker, treeProvider, t) {
         this.scanner = scanner;
         this.controller = controller;
+        this.updateChecker = updateChecker;
         this.treeProvider = treeProvider;
         this.t = t;
         this.panel = null;
@@ -76,7 +78,8 @@ class InfoPanel {
         const commandIds = {
             enable: 'extensionManager.enable',
             disable: 'extensionManager.disable',
-            uninstall: 'extensionManager.uninstall'
+            uninstall: 'extensionManager.uninstall',
+            update: 'extensionManager.update'
         };
         if (commandIds[message.type]) {
             // Same confirmations as in the sidebar; the list refresh updates this page
@@ -134,20 +137,6 @@ class InfoPanel {
     }
 
     /**
-     * Turn package.json repository URLs into a browsable https URL
-     * @param {string} url
-     * @returns {string|null}
-     */
-    normalizeRepository(url) {
-        if (!url) return null;
-        let value = url.trim().replace(/^git\+/, '').replace(/\.git$/, '');
-        value = value.replace(/^git@([^:]+):/, 'https://$1/').replace(/^git:\/\//, 'https://');
-        if (/^github:/.test(value)) value = value.replace(/^github:/, 'https://github.com/');
-        if (/^[\w.-]+\/[\w.-]+$/.test(value)) value = `https://github.com/${value}`;
-        return /^https?:\/\//.test(value) ? value : null;
-    }
-
-    /**
      * Set the webview HTML for an extension
      * @param {Object} extension
      */
@@ -164,7 +153,7 @@ class InfoPanel {
 
         const readme = this.readMarkdown(folder, 'README.md');
         const changelog = this.readMarkdown(folder, 'CHANGELOG.md');
-        const repository = this.normalizeRepository(extension.repository);
+        const repository = normalizeRepository(extension.repository);
         const icon = extension.iconPath && fs.existsSync(extension.iconPath)
             ? webview.asWebviewUri(vscode.Uri.file(extension.iconPath)).toString() : null;
 
@@ -193,14 +182,17 @@ class InfoPanel {
         const isSelf = extension.id === SELF_ID;
         const id = esc(extension.id);
 
-        let buttons = '';
+        const update = this.updateChecker.get(extension.id);
+        let buttons = update && extension.status !== 'pending'
+            ? `<button data-action="update">${esc(t('update.buttonTo', update.version))}</button>` : '';
         if (extension.status === 'pending') {
-            buttons = `<span class="note">${esc(t('tree.pending'))}</span>`;
+            buttons += `<span class="note">${esc(t('tree.pending'))}</span>`;
         } else if (!isSelf) {
-            buttons = extension.status === 'enabled'
-                ? `<button data-action="disable">${esc(t('button.disable'))}</button>`
-                : `<button data-action="enable">${esc(t('button.enable'))}</button>`;
-            buttons += `<button data-action="uninstall">${esc(t('button.uninstall'))}</button>`;
+            const secondary = update ? ' class="secondary"' : '';
+            buttons += extension.status === 'enabled'
+                ? `<button data-action="disable"${secondary}>${esc(t('button.disable'))}</button>`
+                : `<button data-action="enable"${secondary}>${esc(t('button.enable'))}</button>`;
+            buttons += `<button data-action="uninstall"${secondary}>${esc(t('button.uninstall'))}</button>`;
             if (extension.status === 'disabled') buttons += `<span class="note">${esc(t('tree.disabled'))}</span>`;
         }
 
@@ -224,12 +216,14 @@ class InfoPanel {
     .title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
     h1.name { margin: 0; font-size: 26px; font-weight: 600; }
     .badge { font-size: 12px; padding: 1px 6px; border-radius: 3px; background: var(--vscode-badge-background); color: var(--vscode-badge-foreground); }
+    .badge.update { background: var(--vscode-button-background); color: var(--vscode-button-foreground); }
     .subtitle { margin-top: 6px; display: flex; gap: 10px; color: var(--vscode-descriptionForeground); }
     .subtitle .sep { opacity: .5; }
     .description { margin-top: 8px; }
     .buttons { margin-top: 12px; display: flex; gap: 8px; align-items: center; }
     .buttons button { padding: 3px 10px; border: none; cursor: pointer; font-family: inherit; font-size: 12px; color: var(--vscode-button-foreground); background: var(--vscode-button-background); }
     .buttons button:hover { background: var(--vscode-button-hoverBackground); }
+    .buttons button.secondary { color: var(--vscode-button-secondaryForeground); background: var(--vscode-button-secondaryBackground); }
     .note { font-size: 12px; color: var(--vscode-descriptionForeground); font-style: italic; }
     .tabs { display: flex; gap: 20px; padding: 0 20px; border-bottom: 1px solid var(--vscode-panel-border, rgba(128,128,128,.35)); }
     .tab { padding: 6px 0; cursor: pointer; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--vscode-descriptionForeground); border-bottom: 1px solid transparent; margin-bottom: -1px; }
@@ -264,7 +258,7 @@ class InfoPanel {
 <div class="header">
     ${iconHtml}
     <div>
-        <div class="title"><h1 class="name">${esc(extension.name)}</h1><span class="badge">v${esc(extension.version)}</span></div>
+        <div class="title"><h1 class="name">${esc(extension.name)}</h1><span class="badge">v${esc(extension.version)}</span>${update ? `<span class="badge update">v${esc(update.version)} ${esc(t('update.badgeNew'))}</span>` : ''}</div>
         <div class="subtitle"><span>${esc(extension.publisher)}</span><span class="sep">|</span><span>${id}</span></div>
         ${extension.description ? `<div class="description">${esc(extension.description)}</div>` : ''}
         <div class="buttons">${buttons}</div>
@@ -292,6 +286,7 @@ class InfoPanel {
         ${content.repository ? `<section>
             <h3>${esc(t('detail.resources'))}</h3>
             <div class="fact"><a href="${esc(content.repository)}">${esc(t('detail.repository'))}</a></div>
+            ${update ? `<div class="fact"><a href="${esc(update.releaseUrl)}">${esc(t('detail.release', update.version))}</a></div>` : ''}
         </section>` : ''}
     </div>
 </div>

@@ -6,5 +6,8 @@
   "command.showInfo": "Extension-Info anzeigen",
   "command.install": "Extension installieren (.vsix)",
   "command.about": "Über Extension Manager",
-  "view.installed": "Installiert"
+  "view.installed": "Installiert",
+  "command.checkUpdates": "Nach Updates suchen",
+  "config.checkUpdatesOnStartup": "Beim Start der IDE auf GitHub nach Extension-Updates suchen.",
+  "command.update": "Aktualisieren"
 }

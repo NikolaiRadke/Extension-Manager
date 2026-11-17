@@ -16,8 +16,9 @@ const SELF_ID = 'MonsterMaker.extension-manager';
  * SidebarView - VS Code style extension list as webview in the activity bar
  */
 class SidebarView {
-    constructor(scanner, t, onAction) {
+    constructor(scanner, updateChecker, t, onAction) {
         this.scanner = scanner;
+        this.updateChecker = updateChecker;
         this.t = t;
         this.onAction = onAction;
         this.view = null;
@@ -81,10 +82,19 @@ class SidebarView {
             description: ext.description,
             status: ext.status,
             isSelf: ext.id === SELF_ID,
+            update: this.updateChecker.get(ext.id)?.version || null,
             icon: ext.iconPath ? webview.asWebviewUri(vscode.Uri.file(ext.iconPath)).toString() : null
         }));
 
         webview.postMessage({ type: 'update', items, selectedId: this.selectedId });
+
+        // Number on the activity bar icon, if the IDE supports it
+        const updates = items.filter(item => item.update).length;
+        try {
+            this.view.badge = updates ? { value: updates, tooltip: this.t('update.badge', updates) } : undefined;
+        } catch (error) {
+            // Not supported
+        }
     }
 
     /**
@@ -101,6 +111,8 @@ class SidebarView {
             enabled: this.t('tree.enabled'),
             disabled: this.t('tree.disabled'),
             pending: this.t('tree.pending'),
+            updates: this.t('update.section'),
+            update: this.t('update.button'),
             enable: this.t('button.enable'),
             disable: this.t('button.disable'),
             uninstall: this.t('button.uninstall')
@@ -112,7 +124,7 @@ class SidebarView {
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource} data:; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';">
 <style>
-    body { padding: 0; margin: 0; color: var(--vscode-foreground); font-family: var(--vscode-font-family); font-size: var(--vscode-font-size); }
+    body { padding: 0; margin: 0; overflow-x: hidden; color: var(--vscode-foreground); font-family: var(--vscode-font-family); font-size: var(--vscode-font-size); }
     .search { padding: 6px 12px 8px 12px; position: sticky; top: 0; background: var(--vscode-sideBar-background); z-index: 1; }
     .search input { width: 100%; box-sizing: border-box; padding: 4px 6px; color: var(--vscode-input-foreground); background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border, transparent); outline: none; }
     .search input:focus { border-color: var(--vscode-focusBorder); }
@@ -136,6 +148,8 @@ class SidebarView {
     .item:hover .actions, .item.selected .actions { display: flex; }
     .actions button { font-size: 11px; padding: 1px 6px; border: none; cursor: pointer; color: var(--vscode-button-foreground); background: var(--vscode-button-background); }
     .actions button:hover { background: var(--vscode-button-hoverBackground); }
+    .actions.always { display: flex; }
+    .version .new { color: var(--vscode-charts-green, #89d185); }
     .actions button.secondary { color: var(--vscode-button-secondaryForeground); background: var(--vscode-button-secondaryBackground); }
     .message { padding: 8px 16px; color: var(--vscode-descriptionForeground); }
 </style>
@@ -157,15 +171,18 @@ class SidebarView {
             ? '<img class="icon" src="' + esc(ext.icon) + '" alt="">'
             : '<div class="icon placeholder">' + esc(ext.name.charAt(0).toUpperCase()) + '</div>';
         let actions = '';
-        if (!ext.isSelf && ext.status === 'enabled') actions += '<button class="secondary" data-action="disable">' + esc(S.disable) + '</button>';
+        // With an update only its button fits; the other actions are on the detail page
+        if (ext.update) actions += '<button data-action="update">' + esc(S.update) + '</button>';
+        else if (!ext.isSelf && ext.status === 'enabled') actions += '<button class="secondary" data-action="disable">' + esc(S.disable) + '</button>';
         if (!ext.isSelf && ext.status === 'disabled') actions += '<button data-action="enable">' + esc(S.enable) + '</button>';
-        if (!ext.isSelf) actions += '<button class="secondary" data-action="uninstall">' + esc(S.uninstall) + '</button>';
+        if (!ext.isSelf && !ext.update) actions += '<button class="secondary" data-action="uninstall">' + esc(S.uninstall) + '</button>';
         return '<div class="item ' + ext.status + (ext.id === selectedId ? ' selected' : '') + '" data-id="' + esc(ext.id) + '">'
             + icon
             + '<div class="main">'
-            + '<div class="row"><span class="name">' + esc(ext.name) + '</span><span class="version">v' + esc(ext.version) + '</span></div>'
+            + '<div class="row"><span class="name">' + esc(ext.name) + '</span><span class="version">v' + esc(ext.version)
+            + (ext.update ? ' → <span class="new">v' + esc(ext.update) + '</span>' : '') + '</span></div>'
             + '<div class="desc">' + esc(ext.description) + '</div>'
-            + '<div class="footer"><span class="publisher">' + esc(ext.publisher) + '</span><span class="actions">' + actions + '</span></div>'
+            + '<div class="footer"><span class="publisher">' + esc(ext.publisher) + '</span><span class="actions' + (ext.update ? ' always' : '') + '">' + actions + '</span></div>'
             + '</div></div>';
     }
 
@@ -179,8 +196,10 @@ class SidebarView {
         if (visible.length === 0) { list.innerHTML = '<div class="message">' + esc(S.noResults) + '</div>'; return; }
 
         let html = '';
-        for (const status of ['pending', 'enabled', 'disabled']) {
-            const group = visible.filter(ext => ext.status === status);
+        for (const status of ['updates', 'pending', 'enabled', 'disabled']) {
+            const group = status === 'updates'
+                ? visible.filter(ext => ext.update)
+                : visible.filter(ext => ext.status === status && !ext.update);
             if (group.length === 0) continue;
             html += '<div class="section' + (collapsed[status] ? ' collapsed' : '') + '" data-section="' + status + '">'
                 + '<span class="chevron">▾</span>' + esc(S[status]) + '<span class="count">' + group.length + '</span></div>';

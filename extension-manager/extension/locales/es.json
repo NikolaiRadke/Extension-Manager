@@ -102,5 +102,19 @@
   "security.desc.fileDelete": "Operaciones de eliminación de archivos",
   "security.desc.obfuscatedCode": "Código ofuscado",
   "security.desc.suspiciousDependency": "Dependencia sospechosa",
-  "security.desc.largeFile": "Extensión inusualmente grande"
+  "security.desc.largeFile": "Extensión inusualmente grande",
+  "update.section": "Actualizaciones disponibles",
+  "update.button": "Actualizar",
+  "update.buttonTo": "Actualizar a v{0}",
+  "update.badge": "{0} actualización(es) disponible(s)",
+  "update.badgeNew": "disponible",
+  "update.checking": "Buscando actualizaciones …",
+  "update.availableOne": "Hay una actualización de extensión disponible.",
+  "update.availableMany": "Hay {0} actualizaciones de extensiones disponibles.",
+  "update.show": "Mostrar",
+  "update.none": "Todas las extensiones están actualizadas.",
+  "update.rateLimit": "Se alcanzó el límite de consultas de GitHub. Inténtalo más tarde.",
+  "update.downloading": "Descargando {0} …",
+  "update.downloadFailed": "Error en la descarga: {0}",
+  "detail.release": "Versión v{0}"
 }
