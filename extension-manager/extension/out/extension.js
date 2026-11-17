@@ -45,6 +45,7 @@ async function activate(context) {
     sidebarView = new SidebarView(scanner, t, handleSidebarAction);
     infoPanel = new InfoPanel(scanner, controller, sidebarView, t);
     aboutPanel = new AboutPanel(sidebarView, t);
+    sidebarView.onDidRefresh(() => infoPanel.update());
 
     // Register sidebar view
     context.subscriptions.push(

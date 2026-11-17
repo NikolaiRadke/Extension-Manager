@@ -22,6 +22,15 @@ class SidebarView {
         this.onAction = onAction;
         this.view = null;
         this.selectedId = null;
+        this.refreshListeners = [];
+    }
+
+    /**
+     * Register a callback that runs after every refresh (e.g. the detail page)
+     * @param {Function} listener
+     */
+    onDidRefresh(listener) {
+        this.refreshListeners.push(listener);
     }
 
     /**
@@ -59,6 +68,7 @@ class SidebarView {
      * Rescan extensions and send the list to the webview
      */
     async refresh() {
+        this.refreshListeners.forEach(listener => listener());
         if (!this.view) return;
         const webview = this.view.webview;
         const extensions = await this.scanner.scanExtensions();
