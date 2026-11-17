@@ -16,7 +16,7 @@ Manage installed extensions in Arduino IDE 2.x - enable, disable, install, updat
 - 🌍 **Automatic language detection** based on IDE settings. Support are: **en, es, de, fr, it**. 
   
 ## Screenshot
-![Extension Manager](http://www.nikolairadke.de/aiduino/extensionmanager_screenshot_3.png)
+![Extension Manager](http://www.nikolairadke.de/aiduino/extensionmanager_screenshot_4.png)
 
 ## Installation
 
