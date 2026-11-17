@@ -22,11 +22,20 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "extensionManager",
+          "title": "Extension Manager",
+          "icon": "resources/extensions.svg"
+        }
+      ]
+    },
     "views": {
-      "explorer": [
+      "extensionManager": [
         {
           "id": "extensionManager.extensionTree",
-          "name": "Extension Manager"
+          "name": "Installed"
         }
       ]
     },
@@ -118,7 +127,7 @@
       "view/item/context": [
         {
           "command": "extensionManager.showInfo",
-          "when": "view == extensionManager.extensionTree && viewItem == extension",
+          "when": "view == extensionManager.extensionTree && viewItem =~ /^extension/",
           "group": "inline@1"
         },
         {
