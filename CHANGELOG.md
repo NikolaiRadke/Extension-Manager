@@ -1,4 +1,17 @@
 # Changelog
+## 2.0.0 17.11.2026
+
+## Features
+New look like the extensions view in VS Code: own icon in the activity bar instead of the Explorer
+Extension list with icons, descriptions, search field, and groups (updates, waiting for restart, enabled, disabled)
+Detail page with README, changelog, installation details, and repository link
+Update check via GitHub releases: on startup (setting `extensionManager.checkUpdatesOnStartup`) or with the toolbar button, one-click update with security scan
+Menu and button texts translated (en, de, es, fr, it)
+
+## Bugfixes
+Uninstalling from the info panel skipped the second confirmation of uninstall.json
+Info button in the list always reported "Extension not found"
+
 ## 1.1.0 14.11.2026
 
 ## Features
