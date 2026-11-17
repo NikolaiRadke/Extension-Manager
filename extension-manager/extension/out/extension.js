@@ -102,7 +102,9 @@ function registerCommands(context) {
 
     // Show info command
     context.subscriptions.push(
-        vscode.commands.registerCommand('extensionManager.showInfo', async (extensionId) => {
+        vscode.commands.registerCommand('extensionManager.showInfo', async (arg) => {
+            // Tree click passes the ID, the inline button passes the TreeItem
+            const extensionId = typeof arg === 'string' ? arg : arg?.command?.arguments?.[0];
             if (extensionId) {
                 await infoPanel.show(extensionId);
             }

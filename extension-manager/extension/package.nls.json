@@ -1,0 +1,10 @@
+{
+  "command.refresh": "Refresh Extensions",
+  "command.enable": "Enable Extension",
+  "command.disable": "Disable Extension",
+  "command.uninstall": "Uninstall Extension",
+  "command.showInfo": "Show Extension Info",
+  "command.install": "Install Extension (.vsix)",
+  "command.about": "About Extension Manager",
+  "view.installed": "Installed"
+}

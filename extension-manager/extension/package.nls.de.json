@@ -1,0 +1,10 @@
+{
+  "command.refresh": "Liste neu laden",
+  "command.enable": "Extension aktivieren",
+  "command.disable": "Extension deaktivieren",
+  "command.uninstall": "Extension deinstallieren",
+  "command.showInfo": "Extension-Info anzeigen",
+  "command.install": "Extension installieren (.vsix)",
+  "command.about": "Über Extension Manager",
+  "view.installed": "Installiert"
+}

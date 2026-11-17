@@ -35,44 +35,44 @@
       "extensionManager": [
         {
           "id": "extensionManager.extensionTree",
-          "name": "Installed"
+          "name": "%view.installed%"
         }
       ]
     },
     "commands": [
       {
         "command": "extensionManager.refresh",
-        "title": "Refresh Extensions",
+        "title": "%command.refresh%",
         "icon": "$(refresh)"
       },
       {
         "command": "extensionManager.enable",
-        "title": "Enable Extension",
+        "title": "%command.enable%",
         "icon": "$(check)"
       },
       {
         "command": "extensionManager.disable",
-        "title": "Disable Extension",
+        "title": "%command.disable%",
         "icon": "$(close)"
       },
       {
         "command": "extensionManager.uninstall",
-        "title": "Uninstall Extension",
+        "title": "%command.uninstall%",
         "icon": "$(trash)"
       },
       {
         "command": "extensionManager.showInfo",
-        "title": "Show Extension Info",
+        "title": "%command.showInfo%",
         "icon": "$(info)"
       },
       {
         "command": "extensionManager.install",
-        "title": "Install Extension (.vsix)",
+        "title": "%command.install%",
         "icon": "$(cloud-download)"
       },
       {
         "command": "extensionManager.about",
-        "title": "About Extension Manager",
+        "title": "%command.about%",
         "icon": "$(info)"
       }
     ],
