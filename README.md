@@ -1,4 +1,4 @@
-![Extension Manager](http://www.nikolairadke.de/aiduino/extensionmanager_banner.png)
+![Extension Manager](https://www.nikolairadke.de/aiduino/extensionmanager_banner.png)
 # Extension Manager
 
 Manage installed extensions in Arduino IDE 2.x - enable, disable, install, update, and uninstall extensions directly from the IDE. It looks and works like the extensions view in VS Code.
@@ -16,7 +16,7 @@ Manage installed extensions in Arduino IDE 2.x - enable, disable, install, updat
 - 🌍 **Automatic language detection** based on IDE settings. Support are: **en, es, de, fr, it**. 
   
 ## Screenshot
-![Extension Manager](http://www.nikolairadke.de/aiduino/extensionmanager_screenshot_4.png)
+![Extension Manager](https://www.nikolairadke.de/aiduino/extensionmanager_screenshot_4.png)
 
 ## Installation
 
@@ -91,7 +91,7 @@ Extension Manager supports declarative uninstall configurations. Extensions can 
 
 When an extension includes `uninstall.json`, Extension Manager shows "Uninstaller: ✓ Available" in the extension details and performs a complete cleanup on uninstall.
 
-**For extension developers:** See [UNINSTALLER.md](UNINSTALLER.md) for the full specification.
+**For extension developers:** See [UNINSTALLER.md](https://github.com/NikolaiRadke/Extension-Manager/blob/main/UNINSTALLER.md) for the full specification.
 
 ## Uninstall
 
@@ -103,7 +103,7 @@ Use the **About** panel (ℹ️ button in toolbar) and click the "Uninstall" but
 
 ## Tested Extensions
 
-See this [list](TESTED_EXTENSIONS.md).  
+See this [list](https://github.com/NikolaiRadke/Extension-Manager/blob/main/TESTED_EXTENSIONS.md).  
   
 ## Related Projects
 
