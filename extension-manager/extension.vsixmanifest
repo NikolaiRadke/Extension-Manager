@@ -6,6 +6,7 @@
 			<Description xml:space="preserve">Manage installed extensions in Arduino IDE 2.x</Description>
 			<Tags>arduino,arduinoIDE,extension,manager,plugin</Tags>
 			<Categories>Other</Categories>
+			<Icon>extension/resources/icon.png</Icon>
 			<GalleryFlags>Public</GalleryFlags>
 			
 			<Properties>
@@ -42,6 +43,7 @@
 			<Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="extension/package.json" Addressable="true" />
 			<Asset Type="Microsoft.VisualStudio.Services.Content.Details" Path="extension/README.md" Addressable="true" />
 			<Asset Type="Microsoft.VisualStudio.Services.Content.Changelog" Path="extension/CHANGELOG.md" Addressable="true" />
+			<Asset Type="Microsoft.VisualStudio.Services.Icons.Default" Path="extension/resources/icon.png" Addressable="true" />
 			
 		</Assets>
 	</PackageManifest>
