@@ -34,6 +34,7 @@
     "views": {
       "extensionManager": [
         {
+          "type": "webview",
           "id": "extensionManager.extensionTree",
           "name": "%view.installed%"
         }
@@ -122,28 +123,6 @@
           "command": "extensionManager.about",
           "when": "view == extensionManager.extensionTree",
           "group": "navigation"
-        }
-      ],
-      "view/item/context": [
-        {
-          "command": "extensionManager.showInfo",
-          "when": "view == extensionManager.extensionTree && viewItem =~ /^extension/",
-          "group": "inline@1"
-        },
-        {
-          "command": "extensionManager.enable",
-          "when": "view == extensionManager.extensionTree && viewItem == extension-disabled",
-          "group": "inline@2"
-        },
-        {
-          "command": "extensionManager.disable",
-          "when": "view == extensionManager.extensionTree && viewItem == extension-enabled",
-          "group": "inline@2"
-        },
-        {
-          "command": "extensionManager.uninstall",
-          "when": "view == extensionManager.extensionTree && viewItem =~ /extension/ && viewItem != extension-self",
-          "group": "inline@3"
         }
       ]
     }

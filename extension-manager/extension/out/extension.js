@@ -15,7 +15,7 @@ const Controller = require('./core/controller');
 const commands = require('./core/commands');
 
 // UI modules
-const TreeProvider = require('./ui/treeProvider');
+const SidebarView = require('./ui/sidebarView');
 const InfoPanel = require('./ui/infoPanel');
 const AboutPanel = require('./ui/aboutPanel');
 
@@ -25,7 +25,7 @@ const { loadTranslations, t } = require('./utils/localeLoader');
 // Global instances
 let scanner;
 let controller;
-let treeProvider;
+let sidebarView;
 let infoPanel;
 let aboutPanel;
 
@@ -42,16 +42,16 @@ async function activate(context) {
     controller = new Controller(scanner);
 
     // Initialize UI modules
-    treeProvider = new TreeProvider(scanner, t);
-    infoPanel = new InfoPanel(scanner, controller, treeProvider, t);
-    aboutPanel = new AboutPanel(treeProvider, t);
+    sidebarView = new SidebarView(scanner, t, handleSidebarAction);
+    infoPanel = new InfoPanel(scanner, controller, sidebarView, t);
+    aboutPanel = new AboutPanel(sidebarView, t);
 
-    // Register tree view
-    const treeView = vscode.window.createTreeView('extensionManager.extensionTree', {
-        treeDataProvider: treeProvider,
-        showCollapseAll: false
-    });
-    context.subscriptions.push(treeView);
+    // Register sidebar view
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider('extensionManager.extensionTree', sidebarView, {
+            webviewOptions: { retainContextWhenHidden: true }
+        })
+    );
 
 
     // Register commands
@@ -66,45 +66,40 @@ function registerCommands(context) {
     // Refresh command
     context.subscriptions.push(
         vscode.commands.registerCommand('extensionManager.refresh', async () => {
-            await commands.refreshExtensions(treeProvider, infoPanel, t);
+            await commands.refreshExtensions(sidebarView, infoPanel, t);
         })
     );
 
     // Enable command
     context.subscriptions.push(
-        vscode.commands.registerCommand('extensionManager.enable', async (item) => {
-            if (item && item.command && item.command.arguments) {
-                const extensionId = item.command.arguments[0];
-                await commands.enableExtension(extensionId, scanner, controller, treeProvider, t);
+        vscode.commands.registerCommand('extensionManager.enable', async (extensionId) => {
+            if (extensionId) {
+                await commands.enableExtension(extensionId, scanner, controller, sidebarView, t);
             }
         })
     );
 
     // Disable command
     context.subscriptions.push(
-        vscode.commands.registerCommand('extensionManager.disable', async (item) => {
-            if (item && item.command && item.command.arguments) {
-                const extensionId = item.command.arguments[0];
-                await commands.disableExtension(extensionId, scanner, controller, treeProvider, t);
+        vscode.commands.registerCommand('extensionManager.disable', async (extensionId) => {
+            if (extensionId) {
+                await commands.disableExtension(extensionId, scanner, controller, sidebarView, t);
             }
         })
     );
 
     // Uninstall command
     context.subscriptions.push(
-        vscode.commands.registerCommand('extensionManager.uninstall', async (item) => {
-            if (item && item.command && item.command.arguments) {
-                const extensionId = item.command.arguments[0];
-                await commands.uninstallExtension(extensionId, scanner, controller, treeProvider, t);
+        vscode.commands.registerCommand('extensionManager.uninstall', async (extensionId) => {
+            if (extensionId) {
+                await commands.uninstallExtension(extensionId, scanner, controller, sidebarView, t);
             }
         })
     );
 
     // Show info command
     context.subscriptions.push(
-        vscode.commands.registerCommand('extensionManager.showInfo', async (arg) => {
-            // Tree click passes the ID, the inline button passes the TreeItem
-            const extensionId = typeof arg === 'string' ? arg : arg?.command?.arguments?.[0];
+        vscode.commands.registerCommand('extensionManager.showInfo', async (extensionId) => {
             if (extensionId) {
                 await infoPanel.show(extensionId);
             }
@@ -114,7 +109,7 @@ function registerCommands(context) {
     // Install command
     context.subscriptions.push(
         vscode.commands.registerCommand('extensionManager.install', async () => {
-            await commands.installExtension(controller, treeProvider, t);
+            await commands.installExtension(controller, sidebarView, t);
         })
     );
 
@@ -124,6 +119,23 @@ function registerCommands(context) {
             await commands.showAbout(aboutPanel);
         })
     );
+}
+
+/**
+ * Handle clicks in the sidebar list
+ * @param {string} action - open, enable, disable or uninstall
+ * @param {string} extensionId - Extension ID
+ */
+async function handleSidebarAction(action, extensionId) {
+    const commandIds = {
+        open: 'extensionManager.showInfo',
+        enable: 'extensionManager.enable',
+        disable: 'extensionManager.disable',
+        uninstall: 'extensionManager.uninstall'
+    };
+    if (commandIds[action]) {
+        await vscode.commands.executeCommand(commandIds[action], extensionId);
+    }
 }
 
 /**

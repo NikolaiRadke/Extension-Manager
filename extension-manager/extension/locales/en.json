@@ -1,5 +1,7 @@
 {
   "extension.description": "Manage installed extensions in Arduino IDE 2.x",
+  "sidebar.search": "Search installed extensions",
+  "sidebar.noResults": "No matching extensions",
   "tree.empty": "No extensions found",
   "tree.enabled": "Enabled",
   "tree.disabled": "Disabled",

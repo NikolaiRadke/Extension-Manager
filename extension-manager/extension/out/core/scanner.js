@@ -190,6 +190,8 @@ class Scanner {
                 publisher: packageJson.publisher,
                 version: packageJson.version,
                 description: packageJson.description || '',
+                iconPath: packageJson.icon ? path.join(dirPath, 'extension', packageJson.icon) : null,
+                repository: typeof packageJson.repository === 'string' ? packageJson.repository : packageJson.repository?.url,
                 status: type === 'deployed' ? 'enabled' : 'disabled',
                 deployedPath: type === 'deployed' ? dirPath : undefined,
                 disabledPath: type === 'disabled' ? dirPath : undefined,
