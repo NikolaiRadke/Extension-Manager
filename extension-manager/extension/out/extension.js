@@ -30,10 +30,9 @@ const { loadTranslations, t } = require('./utils/localeLoader');
 // Delay of the automatic update check after start (ms)
 const STARTUP_CHECK_DELAY = 5000;
 
-// Layout check for sketches used with version 1.x
+// Layout fix for sketches used with version 1.x
 const LAYOUT_CHECKED_KEY = 'extensionManager.layoutChecked';
 const LAYOUT_CHECK_DELAY = 1500;     // ms after start
-const LAYOUT_CHECK_TIMEOUT = 3000;   // ms to wait for the list to appear
 
 // Global instances
 let scanner;
@@ -162,10 +161,8 @@ function registerCommands(context) {
 
 /**
  * Version 1.x lived in the Explorer. The IDE (Theia) restores the stored layout
- * of a sketch, so in sketches used with 1.x the list stays in the Explorer and
- * the activity bar container is missing or empty. Once per sketch we open our
- * container and look whether the list shows up there. If not, we offer to reset
- * the layout of this sketch.
+ * of a sketch, so in sketches used with 1.x the activity bar icon is missing.
+ * Opening our container once per sketch adds it again.
  * @param {vscode.ExtensionContext} context
  */
 function checkSketchLayout(context) {
@@ -175,25 +172,9 @@ function checkSketchLayout(context) {
     setTimeout(async () => {
         try {
             await vscode.commands.executeCommand('workbench.view.extension.extensionManager');
+            await context.workspaceState.update(LAYOUT_CHECKED_KEY, true);
         } catch (error) {
             console.log('Extension Manager: could not open view container:', error.message);
-            return;
-        }
-
-        if (await sidebarView.waitUntilVisible(LAYOUT_CHECK_TIMEOUT)) {
-            await context.workspaceState.update(LAYOUT_CHECKED_KEY, true);
-            return;
-        }
-
-        const reset = t('layout.reset');
-        const never = t('layout.dontAsk');
-        const choice = await vscode.window.showWarningMessage(t('layout.oldLayout'), reset, never);
-        if (choice === never) {
-            await context.workspaceState.update(LAYOUT_CHECKED_KEY, true);
-        } else if (choice === reset) {
-            await context.workspaceState.update(LAYOUT_CHECKED_KEY, true);
-            // Theia command behind "Reset Workbench Layout"; reloads the window
-            await vscode.commands.executeCommand('reset.layout');
         }
     }, LAYOUT_CHECK_DELAY);
 }

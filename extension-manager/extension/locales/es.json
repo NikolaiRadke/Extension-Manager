@@ -116,8 +116,5 @@
   "update.rateLimit": "Se alcanzó el límite de consultas de GitHub. Inténtalo más tarde.",
   "update.downloading": "Descargando {0} …",
   "update.downloadFailed": "Error en la descarga: {0}",
-  "detail.release": "Versión v{0}",
-  "layout.oldLayout": "Este sketch todavía usa el diseño de ventana de Extension Manager 1.x, por lo que la lista está en el Explorador en lugar de en su propia barra lateral. ¿Restablecer el diseño de este sketch? La ventana se recargará.",
-  "layout.reset": "Restablecer diseño",
-  "layout.dontAsk": "No volver a preguntar"
+  "detail.release": "Versión v{0}"
 }

@@ -66,20 +66,6 @@ class SidebarView {
     }
 
     /**
-     * Wait until the list is visible in its container
-     * @param {number} timeout - Maximum wait in ms
-     * @returns {Promise<boolean>} True if the view became visible
-     */
-    async waitUntilVisible(timeout) {
-        const step = 100;
-        for (let waited = 0; waited <= timeout; waited += step) {
-            if (this.view && this.view.visible) return true;
-            await new Promise(resolve => setTimeout(resolve, step));
-        }
-        return false;
-    }
-
-    /**
      * Rescan extensions and send the list to the webview
      */
     async refresh() {

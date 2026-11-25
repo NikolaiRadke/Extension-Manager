@@ -116,8 +116,5 @@
   "update.rateLimit": "GitHub-Abfragelimit erreicht. Bitte später erneut versuchen.",
   "update.downloading": "Lade {0} herunter …",
   "update.downloadFailed": "Download fehlgeschlagen: {0}",
-  "detail.release": "Release v{0}",
-  "layout.oldLayout": "Dieser Sketch nutzt noch das Fensterlayout von Extension Manager 1.x, daher steht die Liste im Explorer statt in der eigenen Seitenleiste. Layout dieses Sketches zurücksetzen? Das Fenster wird neu geladen.",
-  "layout.reset": "Layout zurücksetzen",
-  "layout.dontAsk": "Nicht mehr fragen"
+  "detail.release": "Release v{0}"
 }

@@ -116,8 +116,5 @@
   "update.rateLimit": "GitHub request limit reached. Please try again later.",
   "update.downloading": "Downloading {0} …",
   "update.downloadFailed": "Download failed: {0}",
-  "detail.release": "Release v{0}",
-  "layout.oldLayout": "This sketch still uses the window layout of Extension Manager 1.x, so the list is in the Explorer instead of its own sidebar. Reset the layout of this sketch? The window will reload.",
-  "layout.reset": "Reset layout",
-  "layout.dontAsk": "Don't ask again"
+  "detail.release": "Release v{0}"
 }
