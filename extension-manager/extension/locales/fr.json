@@ -116,5 +116,8 @@
   "update.rateLimit": "Limite de requêtes GitHub atteinte. Réessayez plus tard.",
   "update.downloading": "Téléchargement de {0} …",
   "update.downloadFailed": "Échec du téléchargement : {0}",
-  "detail.release": "Version v{0}"
+  "detail.release": "Version v{0}",
+  "layout.oldLayout": "Ce sketch utilise encore la disposition de fenêtre d'Extension Manager 1.x, la liste se trouve donc dans l'Explorateur au lieu de sa propre barre latérale. Réinitialiser la disposition de ce sketch ? La fenêtre sera rechargée.",
+  "layout.reset": "Réinitialiser la disposition",
+  "layout.dontAsk": "Ne plus demander"
 }

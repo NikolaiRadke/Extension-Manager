@@ -30,8 +30,10 @@ const { loadTranslations, t } = require('./utils/localeLoader');
 // Delay of the automatic update check after start (ms)
 const STARTUP_CHECK_DELAY = 5000;
 
-// Delay before fixing the layout of sketches used with version 1.x (ms)
-const OLD_LAYOUT_FIX_DELAY = 1000;
+// Layout check for sketches used with version 1.x
+const LAYOUT_CHECKED_KEY = 'extensionManager.layoutChecked';
+const LAYOUT_CHECK_DELAY = 1500;     // ms after start
+const LAYOUT_CHECK_TIMEOUT = 3000;   // ms to wait for the list to appear
 
 // Global instances
 let scanner;
@@ -72,7 +74,7 @@ async function activate(context) {
     registerCommands(context);
 
     // Sketches used with version 1.x may still show the list in the Explorer
-    moveViewFromOldLayout();
+    checkSketchLayout(context);
 
     // Look for updates a few seconds after start, not to slow down the IDE
     if (vscode.workspace.getConfiguration('extensionManager').get('checkUpdatesOnStartup', true)) {
@@ -159,29 +161,56 @@ function registerCommands(context) {
 }
 
 /**
- * Version 1.x lived in the Explorer and left a marker file in every sketch
- * it was opened in. The IDE (Theia) restores the stored layout of such a sketch,
- * so the new activity bar icon would be missing. Opening our own view container
- * once lets Theia add it again. The marker is removed afterwards, so this
- * runs only once per sketch.
+ * Version 1.x lived in the Explorer. The IDE (Theia) restores the stored layout
+ * of a sketch, so in sketches used with 1.x the list stays in the Explorer and
+ * the activity bar container is missing or empty. Once per sketch we open our
+ * container and look whether the list shows up there. If not, we offer to reset
+ * the layout of this sketch.
+ * @param {vscode.ExtensionContext} context
  */
-function moveViewFromOldLayout() {
-    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-    if (!workspaceFolder) return;
-
-    // Same hash the IDE uses for its workspace-storage folder
-    const hash = crypto.createHash('md5').update(workspaceFolder).digest('hex');
-    const markerFile = path.join(os.homedir(), '.arduinoIDE', 'workspace-storage', hash, '.extensionmanager-triggered');
-    if (!fs.existsSync(markerFile)) return;
+function checkSketchLayout(context) {
+    if (context.workspaceState.get(LAYOUT_CHECKED_KEY)) return;
+    removeOldMarker();
 
     setTimeout(async () => {
         try {
             await vscode.commands.executeCommand('workbench.view.extension.extensionManager');
-            fs.unlinkSync(markerFile);
         } catch (error) {
-            console.log('Extension Manager: could not move view from old layout:', error.message);
+            console.log('Extension Manager: could not open view container:', error.message);
+            return;
         }
-    }, OLD_LAYOUT_FIX_DELAY);
+
+        if (await sidebarView.waitUntilVisible(LAYOUT_CHECK_TIMEOUT)) {
+            await context.workspaceState.update(LAYOUT_CHECKED_KEY, true);
+            return;
+        }
+
+        const reset = t('layout.reset');
+        const never = t('layout.dontAsk');
+        const choice = await vscode.window.showWarningMessage(t('layout.oldLayout'), reset, never);
+        if (choice === never) {
+            await context.workspaceState.update(LAYOUT_CHECKED_KEY, true);
+        } else if (choice === reset) {
+            await context.workspaceState.update(LAYOUT_CHECKED_KEY, true);
+            // Theia command behind "Reset Workbench Layout"; reloads the window
+            await vscode.commands.executeCommand('reset.layout');
+        }
+    }, LAYOUT_CHECK_DELAY);
+}
+
+/**
+ * Remove the marker file version 1.x left in the IDE's workspace-storage
+ */
+function removeOldMarker() {
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!workspaceFolder) return;
+    const hash = crypto.createHash('md5').update(workspaceFolder).digest('hex');
+    const markerFile = path.join(os.homedir(), '.arduinoIDE', 'workspace-storage', hash, '.extensionmanager-triggered');
+    try {
+        if (fs.existsSync(markerFile)) fs.unlinkSync(markerFile);
+    } catch (error) {
+        // Not critical
+    }
 }
 
 /**

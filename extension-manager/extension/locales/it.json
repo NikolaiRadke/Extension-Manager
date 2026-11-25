@@ -116,5 +116,8 @@
   "update.rateLimit": "Limite di richieste GitHub raggiunto. Riprova più tardi.",
   "update.downloading": "Download di {0} …",
   "update.downloadFailed": "Download non riuscito: {0}",
-  "detail.release": "Release v{0}"
+  "detail.release": "Release v{0}",
+  "layout.oldLayout": "Questo sketch usa ancora il layout della finestra di Extension Manager 1.x, quindi l'elenco si trova in Esplora risorse invece che nella propria barra laterale. Ripristinare il layout di questo sketch? La finestra verrà ricaricata.",
+  "layout.reset": "Ripristina layout",
+  "layout.dontAsk": "Non chiedere più"
 }
