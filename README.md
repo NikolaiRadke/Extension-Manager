@@ -78,7 +78,7 @@ chmod +x install_extensionmanager_macos.sh
 
 - Changes require an IDE restart to take effect
 - The update check only works for extensions with a GitHub repository and a .vsix file in their releases
-- After updating from version 1.1.0 or older, sketches you opened before may still show the old list in the Explorer. Open a new sketch, or reset the layout with **Ctrl+Shift+P** → *Reset Workbench Layout*
+- When you open a sketch for the first time with version 2.0.1 or newer, the Extension Manager sidebar opens once. This moves the list out of the Explorer in sketches used with version 1.x. If the list still shows up in the Explorer, reset the layout with **Ctrl+Shift+P** → *Reset Workbench Layout*
 
 ## Advanced: uninstall.json Support
 

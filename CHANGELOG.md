@@ -1,4 +1,10 @@
 # Changelog
+## 2.0.1 25.11.2026
+
+## Bugfixes
+Sketches used with version 1.x showed no icon in the activity bar, because the IDE restored their old layout. The Extension Manager now opens its sidebar once per sketch, which brings the icon back
+Leftover marker files of version 1.x are removed
+
 ## 2.0.0 17.11.2026
 
 ## Features
