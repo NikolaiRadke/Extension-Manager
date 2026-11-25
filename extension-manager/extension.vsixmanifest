@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 	<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
 		<Metadata>
-			<Identity Language="en-US" Id="extension-manager" Version="2.0.0" Publisher="MonsterMaker" />
+			<Identity Language="en-US" Id="extension-manager" Version="2.0.1" Publisher="MonsterMaker" />
 			<DisplayName>Extension Manager</DisplayName>
 			<Description xml:space="preserve">Manage installed extensions in Arduino IDE 2.x</Description>
 			<Tags>arduino,arduinoIDE,extension,manager,plugin</Tags>

@@ -8,6 +8,10 @@
 "use strict";
 
 const vscode = require('vscode');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const crypto = require('crypto');
 
 // Core modules
 const Scanner = require('./core/scanner');
@@ -25,6 +29,9 @@ const { loadTranslations, t } = require('./utils/localeLoader');
 
 // Delay of the automatic update check after start (ms)
 const STARTUP_CHECK_DELAY = 5000;
+
+// Delay before fixing the layout of sketches used with version 1.x (ms)
+const OLD_LAYOUT_FIX_DELAY = 1000;
 
 // Global instances
 let scanner;
@@ -63,6 +70,9 @@ async function activate(context) {
 
     // Register commands
     registerCommands(context);
+
+    // Sketches used with version 1.x may still show the list in the Explorer
+    moveViewFromOldLayout();
 
     // Look for updates a few seconds after start, not to slow down the IDE
     if (vscode.workspace.getConfiguration('extensionManager').get('checkUpdatesOnStartup', true)) {
@@ -146,6 +156,32 @@ function registerCommands(context) {
             await commands.showAbout(aboutPanel);
         })
     );
+}
+
+/**
+ * Version 1.x lived in the Explorer and left a marker file in every sketch
+ * it was opened in. The IDE (Theia) restores the stored layout of such a sketch,
+ * so the new activity bar icon would be missing. Opening our own view container
+ * once lets Theia add it again. The marker is removed afterwards, so this
+ * runs only once per sketch.
+ */
+function moveViewFromOldLayout() {
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!workspaceFolder) return;
+
+    // Same hash the IDE uses for its workspace-storage folder
+    const hash = crypto.createHash('md5').update(workspaceFolder).digest('hex');
+    const markerFile = path.join(os.homedir(), '.arduinoIDE', 'workspace-storage', hash, '.extensionmanager-triggered');
+    if (!fs.existsSync(markerFile)) return;
+
+    setTimeout(async () => {
+        try {
+            await vscode.commands.executeCommand('workbench.view.extension.extensionManager');
+            fs.unlinkSync(markerFile);
+        } catch (error) {
+            console.log('Extension Manager: could not move view from old layout:', error.message);
+        }
+    }, OLD_LAYOUT_FIX_DELAY);
 }
 
 /**
